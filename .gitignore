@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.log
+.vscode/
+.idea/
+*.stl.bak
+calibration.json
+
+# Two-phase solver lookup tables (generated on first run, ~100 MB)
+software/twophase/

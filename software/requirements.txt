@@ -1,0 +1,7 @@
+opencv-python>=4.8
+numpy>=1.24
+pyserial>=3.5
+# Solver: the pure-Python one installs anywhere. The first run builds lookup tables (a few minutes).
+RubikTwoPhase>=1.1
+# Optional faster solver. On Windows it needs Microsoft C++ Build Tools:
+#   pip install kociemba
