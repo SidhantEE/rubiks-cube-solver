@@ -1,8 +1,9 @@
 # Rubik's Cube Solver Robot
 
 A six-motor robot that solves a 3x3 Rubik's cube. Each face's center piece is
-coupled directly to a NEMA 17 stepper motor, so any face can be turned without
-regripping the cube.
+coupled directly to a pancake NEMA 17 stepper motor, so any face can be turned
+without regripping the cube. The 3D-printed frame is the
+[t33devv/rubik](https://github.com/t33devv/rubik) design (see `hardware/README.md`).
 
 ```
  webcam ──► software/ (Python)  ──USB serial──►  firmware/ (Arduino Mega)  ──► 6 × stepper drivers ──► 6 × NEMA 17
@@ -62,7 +63,9 @@ All six drivers share ENABLE on pin 22 (active LOW).
 ## Status
 
 - [x] Repo scaffold, firmware, solver pipeline
-- [ ] Order parts (see `docs/BOM.md`)
-- [ ] Design and print frame and center couplers
-- [ ] Wire and tune motor speed and current
+- [x] Bill of materials (`docs/BOM.md`, illustrated in `docs/bom.html`)
+- [ ] Order parts
+- [ ] Print the t33devv/rubik frame and cube connectors
+- [ ] Wire the A4988s, set Vref, tune motor speed
 - [ ] Calibrate color thresholds for your lighting
+- [ ] Firmware: turn opposite faces (U/D, F/B, R/L) at the same time
