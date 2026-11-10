@@ -92,7 +92,7 @@ ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 
 <header>
   <div class="eyebrow">Research summary and bill of materials · 9 Nov 2026</div>
   <h1>What it takes to build a fast Rubik's cube solver</h1>
-  <p class="lede">We are building Tier 1: six StepperOnline 17HE19-2004S stepper motors on TMC5160 drivers, about $440 to $470 in parts plus your own 24 V supply, aiming for a solve of 1 to 1.5 seconds. On paper the motor handles 40 to 45 ms quarter turns at 24 V.</p>
+  <p class="lede">We are building Tier 1: six StepperOnline 17HE19-2004S stepper motors on TMC5160 drivers, about $440 to $460 in parts plus your own 24 V supply, aiming for a solve of 1 to 1.5 seconds. On paper the motor handles 40 to 45 ms quarter turns at 24 V.</p>
   <p class="note">The feasibility check is a calculation, not a measurement. No published cube robot names this exact motor, and cube friction is the main unknown. A one-axis bench test settles it before all six axes are built. The parts list below was audited on 10 Nov 2026.</p>
 </header>
 
@@ -231,7 +231,7 @@ ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 
     <span><span class="tag u">unknown</span> no price found</span>
   </div>
 
-  <div class="tier-head"><h3>Tier 1: stepper build (chosen)</h3><span class="target">target 1 to 1.5 s · about $440 to $470</span></div>
+  <div class="tier-head"><h3>Tier 1: stepper build (chosen)</h3><span class="target">target 1 to 1.5 s · about $440 to $460</span></div>
   <p>The Hackaday layout with stronger drivers, a two-phase solver, a real speed cube and cameras. At 40 to 45 ms per quarter turn and about 20 moves, motion takes 0.8 to 0.9 s. This list was audited on 10 Nov 2026 against the carts and the parts' own datasheets.</p>
   <h3>Ordered</h3>
   <div class="tw"><table>
@@ -260,12 +260,12 @@ ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 
       <tr><td>Screw terminals or protoboard for the 24 V wiring</td><td class="n">1</td><td class="n">$5 to $10</td><td><span class="tag e">estimate</span></td></tr>
       <tr><td>Micro-USB cable for the Teensy</td><td class="n">1</td><td class="n">$0 to $5</td><td><span class="tag e">estimate</span> the board does not include one</td></tr>
       <tr><td>Printed bench stand, UTA FabLab</td><td class="n">1</td><td class="n">about $5</td><td><span class="tag e">estimate</span> from the model at $0.05 per gram</td></tr>
-      <tr><td>Printed six-motor frame and six shaft adapters</td><td class="n">1 set</td><td class="n">$15 to $30</td><td><span class="tag e">estimate</span> not designed yet</td></tr>
+      <tr><td>Printed six-motor frame and six shaft adapters</td><td class="n">1 set</td><td class="n">$15 to $17</td><td><span class="tag e">estimate</span> from the models at $0.05 per gram</td></tr>
       <tr><td>Arducam colour global-shutter USB camera (OV9782)</td><td class="n">2</td><td class="n">$120</td><td><span class="tag e">estimate</span> mono version listed at $60</td></tr>
       <tr><td>LED lighting for the cameras</td><td class="n">1</td><td class="n">$10 to $15</td><td><span class="tag e">estimate</span></td></tr>
       <tr><td>24 V power supply, about 10 A for six motors</td><td class="n">1</td><td class="n">not included</td><td>You are supplying this</td></tr>
-      <tr class="total"><td>Still-to-buy subtotal</td><td class="n"></td><td class="n">$166 to $200</td><td></td></tr>
-      <tr class="total"><td>Whole Tier 1 build</td><td class="n"></td><td class="n">$436 to $470</td><td>Without cameras and lighting: $306 to $335</td></tr>
+      <tr class="total"><td>Still-to-buy subtotal</td><td class="n"></td><td class="n">$166 to $187</td><td></td></tr>
+      <tr class="total"><td>Whole Tier 1 build</td><td class="n"></td><td class="n">$436 to $457</td><td>Without cameras and lighting: $306 to $322</td></tr>
     </tbody>
   </table></div>
   <h3>What the audit changed</h3>
@@ -282,6 +282,7 @@ ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 
     <li><b>Motor cable:</b> 1 m of 24 AWG wire ending in a 4-pin 2.54 mm plug. The wires run B−, A−, B+, A+, which does not match the driver's pin order, where each coil's two pins sit together. Two pins have to be moved in the plug before it goes on the driver.</li>
     <li><b>Driver and motor:</b> the driver's 3 A and 10 to 35 V limits cover the motor's 2.0 A on a 24 V supply.</li>
     <li><b>Driver and Teensy:</b> both use 3.3 V logic. The driver must be set up over SPI.</li>
+    <li><b>Firmware:</b> the Teensy sketch in the repository sets each driver to 2.0 A over SPI, uses 8 microsteps (400 steps per quarter turn) and turns opposite faces together. It passes a simulated test on a computer; it has not run on real hardware.</li>
     <li><b>Driver header pins:</b> I have not confirmed whether the board arrives with its pins soldered. Plan on a soldering iron being needed.</li>
     <li><b>Cube:</b> TheCubicle lists it at 56.0 mm and 88.9 g, magnetic.</li>
   </ul>

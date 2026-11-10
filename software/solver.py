@@ -3,8 +3,11 @@
 Usage:
   python solver.py --demo                 # solve a built-in scrambled state, no hardware
   python solver.py --state <54 chars>     # solve a state you typed in
-  python solver.py --port COM3            # scan with webcam, solve, run on robot
-  python solver.py --port COM3 --moves "R U R' U'"   # send moves directly (testing)
+  python solver.py --port PORT            # scan with webcam, solve, run on robot
+  python solver.py --port PORT --moves "R U R' U'"   # send moves directly (testing)
+  python solver.py --port PORT --turn-ms 50 --moves "U"  # set the quarter-turn time first
+
+PORT is the Teensy's serial port: /dev/cu.usbmodemNNNN on macOS, COM3 or similar on Windows.
 """
 
 import argparse
@@ -44,15 +47,22 @@ def solve(state: str) -> str:
         raise ValueError(f"Invalid cube state (check the scan): {e}") from e
 
 
-def send_moves(port: str, moves: str, baud: int = 115200, timeout: float = 120.0):
+def send_moves(port: str, moves: str, baud: int = 115200, timeout: float = 120.0,
+               turn_ms=None):
     import serial  # imported here so --demo works without pyserial
 
     with serial.Serial(port, baud, timeout=1) as ser:
-        time.sleep(2)  # the Mega resets when the port opens
+        time.sleep(0.5)  # give the USB serial port a moment to settle
         ser.reset_input_buffer()
         ser.write(b"PING\n")
         if ser.readline().decode().strip() != "PONG":
             raise RuntimeError("Robot did not answer PING. Check the port and firmware.")
+
+        if turn_ms is not None:
+            ser.write(f"TURN {turn_ms}\n".encode())
+            reply = ser.readline().decode().strip()
+            if reply != "OK":
+                raise RuntimeError(f"Robot rejected TURN {turn_ms}: {reply}")
 
         ser.write((moves + "\n").encode())
         deadline = time.time() + timeout
@@ -73,7 +83,8 @@ def main():
     ap.add_argument("--demo", action="store_true", help="solve a built-in example state")
     ap.add_argument("--state", help="54-char facelet string in URFDLB order")
     ap.add_argument("--moves", help="skip solving and send these moves")
-    ap.add_argument("--port", help="serial port of the Arduino, e.g. COM3")
+    ap.add_argument("--port", help="serial port of the Teensy, e.g. /dev/cu.usbmodem1234561 or COM3")
+    ap.add_argument("--turn-ms", type=int, help="quarter-turn time to set before moving (10-1000)")
     ap.add_argument("--camera", type=int, default=0, help="webcam index")
     args = ap.parse_args()
 
@@ -93,7 +104,7 @@ def main():
         print(f"Solution: {moves}  ({len(moves.split())} moves, {time.time() - t0:.2f}s)")
 
     if args.port:
-        secs = send_moves(args.port, moves)
+        secs = send_moves(args.port, moves, turn_ms=args.turn_ms)
         print(f"Robot finished in {secs:.2f}s")
     elif not args.demo and not args.state:
         print("No --port given, so nothing was sent to the robot.")
