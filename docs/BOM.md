@@ -1,33 +1,36 @@
 # Bill of Materials
 
-Audited on 10 November 2026 against the shopping carts and the parts' own
-datasheets. `docs/build-plan.html` has the research behind each choice.
+Audited on 10 November 2026 against the order lines and the parts' own
+datasheets. `docs/build-plan.html` has the research behind each choice; its
+cost table predates the order lines and is superseded by this file.
 
-Prices are US dollars. "Seen" means the price was read from the cart or
-checkout page. "Listed" means it was read from the product page but the order
-itself was not seen. "Estimate" is a rough figure to check before buying.
+Prices are US dollars. "Order" means the line was read from the order or
+invoice. "Cart" means the figure was read from the cart or checkout page but
+did not appear in the order lines seen. "Listed" means the item is confirmed
+ordered but the price comes from the product page. "Estimate" is a rough
+figure to check before buying.
 
 ## Ordered
 
 | Part | Qty | Each | Subtotal | Source | Basis |
 |---|---|---|---|---|---|
-| StepperOnline 17HE19-2004S stepper motor, US warehouse | 6 | $8.45 | $50.70 | StepperOnline | Seen |
-| StepperOnline packing fee | | | $1.90 | StepperOnline | Seen |
-| TMC5160 SilentStepStick driver (one is a spare) | 7 | $19.20 | $134.40 | Mouser 700-TMC5160SILENTSTE | Seen |
-| Teensy 4.1 with headers, SparkFun DEV-16996 | 1 | $35.95 | $35.95 | Mouser 474-DEV-16996 | Seen |
-| Jumper wires, 6 in, male to female, pack of 20 | 1 | $2.75 | $2.75 | Mouser 474-PRT-12794 | Seen |
-| Jumper wires, 6 in, female to female, pack of 20 | 1 | $2.75 | $2.75 | Mouser 474-PRT-12796 | Seen |
-| 22 AWG stranded wire, black, 25 ft | 1 | $5.95 | $5.95 | Mouser 474-PRT-08867 | Seen |
-| Mouser estimated tariff | | | $12.88 | Mouser | Seen |
-| Mouser UPS Ground shipping | | | $9.39 | Mouser | Seen |
+| StepperOnline 17HE19-2004S stepper motor, pack of 5 | 1 | $35.47 | $35.47 | StepperOnline 5-17HE19-2004S | Order |
+| StepperOnline 17HE19-2004S stepper motor, single | 1 | $8.71 | $8.71 | StepperOnline 17HE19-2004S | Order |
+| StepperOnline packing fee | | | $1.90 | StepperOnline | Cart |
+| TMC5160 SilentStepStick driver (one is a spare) | 7 | $19.20 | $134.40 | Mouser 700-TMC5160SILENTSTE | Order |
+| Mouser tariff on the drivers | | | $10.78 | Mouser | Order |
+| Teensy 4.1 with headers, SparkFun DEV-16996 | 1 | $35.95 | $35.95 | Mouser 474-DEV-16996 | Order |
+| 22 AWG stranded wire, black, 25 ft | 1 | $5.95 | $5.95 | Mouser 474-PRT-08867 | Order |
+| 22 AWG stranded wire, red, 25 ft | 1 | $5.95 | $5.95 | Mouser 474-PRT-08865 | Order |
+| Mouser UPS Ground shipping | | | $9.39 | Mouser | Cart |
 | YJ YuLong V2 M speed cube | 1 | $8.99 | $8.99 | TheCubicle | Listed |
 | Cubicle Silicone Lube, Weight 3, 5 cc | 1 | $3.89 | $3.89 | TheCubicle | Listed |
-| **Ordered subtotal** | | | **$269.55** | | |
+| **Ordered subtotal** | | | **$261.38** | | |
 
-The carts were seen but the final orders were not, so three things may differ:
+Notes on the order:
 
-- If the motors were bought as a 5-pack plus one single, they cost about $6.78 less.
-- If the red 22 AWG wire (Mouser 474-PRT-08865) was added, add $5.95.
+- Jumper wires were in the Mouser cart but were not ordered; they are already
+  owned.
 - StepperOnline and TheCubicle shipping, and sales tax, are not included.
 
 ## Still to buy
@@ -44,17 +47,17 @@ The carts were seen but the final orders were not, so three things may differ:
 | LED lighting for the cameras | 1 | $10 to $15 | Estimate |
 | **Still-to-buy subtotal** | | **$166 to $187** | |
 
-Not included: the 24 V power supply, which is already owned. It needs about
+Not included: the 24 V power supply and jumper wires, which are already owned. It needs about
 3 A for the one-motor bench test and about 10 A for all six motors.
 
 ## Total
 
 | | |
 |---|---|
-| Ordered | $269.55 |
+| Ordered | $261.38 |
 | Still to buy | $166 to $187 |
-| **Whole build** | **$436 to $457** |
-| Without cameras and lighting | $306 to $322 |
+| **Whole build** | **$427 to $448** |
+| Without cameras and lighting | $297 to $314 |
 
 ## Screws
 

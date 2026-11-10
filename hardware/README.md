@@ -46,6 +46,14 @@ one centre cap off the cube and measure:
 Put those into `TIP_SQ`, `TIP_DEPTH` and `TIP_SCREW_D` in `cad/bench_stand.py`
 and regenerate.
 
+Without calipers, print `cad/stl/drive_adapter_set.stl` instead (standing on
+the wide end, tips up, 100% infill, 0.2 mm layers, no supports). It is the
+adapter nine times, with tip widths from 13.5 to 15.5 mm in 0.25 mm steps and
+the width engraved on the side of each. Use the one whose tip goes into the
+recess without force and does not rock, then put its width into `TIP_SQ` and
+regenerate to print the other five. Only the width varies: the tip depth and
+screw clearance in the set are still the placeholder values.
+
 ## Cube
 
 YJ YuLong V2 M, 56 mm, magnetic.

@@ -157,7 +157,7 @@ def build_stand():
 
 
 # ------------------------------------------------------------- drive adapter
-def build_adapter():
+def build_adapter(tip_sq=TIP_SQ):
     """Printed sleeve from the motor's D shaft to the cube's centre recess.
 
     Modelled standing on its motor end (z = 0), tip pointing up, which is also
@@ -172,7 +172,7 @@ def build_adapter():
         [0, 0, body_len - flange_t - cone_h]
     )
     flange = cyl_z(flange_r, body_len - flange_t, body_len)
-    tip = extrude(rounded_rect(TIP_SQ, TIP_SQ, 1.0), TIP_DEPTH).translate([0, 0, body_len])
+    tip = extrude(rounded_rect(tip_sq, tip_sq, 1.0), TIP_DEPTH).translate([0, 0, body_len])
     adapter = body + cone + flange + tip
 
     # D bore for the shaft

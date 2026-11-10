@@ -33,6 +33,8 @@ replaced on 2026-11-10; nothing from it should be reintroduced.
   Also holds the shared parameters and helper functions.
 - `cad/frame.py`: six-motor frame (base, tower x4, lift-off top). Imports from
   `bench_stand.py` and runs interference checks every time.
+- `cad/adapter_set.py`: the adapter nine times, tip widths 13.5 to 15.5 mm,
+  each engraved with its width, for finding `TIP_SQ` by trial fit.
 - `cad/stl/`: generated STL files, in print orientation.
 - `hardware/README.md`: assembly, wiring, cube preparation, bench test.
 - `docs/BOM.md`: the bill of materials. Keep it in step with any parts change.
