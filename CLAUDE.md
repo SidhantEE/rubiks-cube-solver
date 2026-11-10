@@ -16,6 +16,19 @@ robot, built with hobby parts.
 - Solver: plan is rob-twophase (github.com/efrantar/rob-twophase).
 - Vision: start with manual entry or one webcam; see "Open work".
 
+## Two plans in one repository
+
+The repository began as a scaffold for the t33devv/rubik build: pancake
+NEMA 17 motors, A4988 drivers, Arduino Mega, 12 V, a non-magnetic GAN RS cube
+and the t33devv frame. The hardware that was ordered is the list above.
+
+- `software/scanner.py`, `software/solver.py`: hardware-independent. Still valid.
+- `firmware/cube_solver/cube_solver.ino`: written for the Mega and A4988. Must
+  be ported to Teensy 4.1 and TMC5160 (SPI configuration, 3.3 V logic).
+- `docs/BOM.md`, `docs/bom.html`, `hardware/README.md`: describe the earlier
+  plan. Do not follow their wiring (12 V, 5 V logic) or cube advice for the
+  ordered parts. They have not been rewritten; ask before deleting them.
+
 ## Repository layout
 
 - `cad/bench_stand.py`: one-motor bench test stand and the shaft adapter.

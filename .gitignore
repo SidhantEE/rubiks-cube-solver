@@ -1,5 +1,16 @@
 __pycache__/
 *.pyc
 .DS_Store
+.venv/
+venv/
+*.log
+.vscode/
+.idea/
+*.stl.bak
+calibration.json
+
+# Two-phase solver lookup tables (generated on first run, ~100 MB)
+software/twophase/
+
 # rough renders, regenerate with bench_stand.py
 cad/preview/
