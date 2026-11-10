@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.DS_Store
+# rough renders, regenerate with bench_stand.py
+cad/preview/

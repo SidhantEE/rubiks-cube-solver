@@ -1,0 +1,411 @@
+<title>Cube Solver Build Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: single reading column like an engineering datasheet; tables and the time scale carry the data, prose stays short. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #171b22;
+  --muted: #5a6472;
+  --line: #d9dde4;
+  --accent: #1f57c3;
+  --accent-soft: #e4ecfb;
+  --ok: #1d7a4a;
+  --ok-soft: #dff3e8;
+  --warn: #8a5a00;
+  --warn-soft: #fbefd2;
+  --unk: #5a6472;
+  --unk-soft: #e8eaee;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101318; --surface: #181c23; --fg: #e8ebf0; --muted: #9aa4b2; --line: #2b313b;
+    --accent: #7ea6f5; --accent-soft: #1c2a47;
+    --ok: #6fd3a0; --ok-soft: #153324; --warn: #e9b955; --warn-soft: #3a2c0c; --unk: #9aa4b2; --unk-soft: #262b34;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101318; --surface: #181c23; --fg: #e8ebf0; --muted: #9aa4b2; --line: #2b313b;
+  --accent: #7ea6f5; --accent-soft: #1c2a47;
+  --ok: #6fd3a0; --ok-soft: #153324; --warn: #e9b955; --warn-soft: #3a2c0c; --unk: #9aa4b2; --unk-soft: #262b34;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 920px; margin: 0 auto; padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 44px; }
+header { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.12; font-weight: 700; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font-size: 22px; line-height: 1.25; font-weight: 600; margin: 0; text-wrap: balance; }
+h3 { font-size: 17px; font-weight: 600; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.lede { font-size: 18px; color: var(--fg); }
+section { display: flex; flex-direction: column; gap: 16px; }
+.note { color: var(--muted); font-size: 14px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 68ch; }
+
+/* time scale */
+.scale { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px 18px 12px; display: flex; flex-direction: column; gap: 10px; }
+.srow { display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr); gap: 14px; align-items: center; }
+.slabel { min-width: 0; font-size: 14px; display: flex; justify-content: space-between; gap: 10px; }
+.slabel b { font-weight: 500; }
+.slabel span { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.track { position: relative; height: 18px; background: repeating-linear-gradient(90deg, transparent 0, transparent calc(100% - 1px)); border-bottom: 1px solid var(--line); }
+.tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.dot { position: absolute; top: 3px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--fg); }
+.band { position: absolute; top: 4px; height: 10px; border-radius: 5px; background: var(--accent); }
+.axis { position: relative; height: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.axis span { position: absolute; transform: translateX(-50%); }
+.axis span:first-child { transform: none; }
+.axis span:last-child { transform: translateX(-100%); }
+.srow.build .slabel b { color: var(--accent); font-weight: 600; }
+@media (max-width: 600px) { .srow { grid-template-columns: minmax(0, 1fr); gap: 4px; } .axis-row .slabel { display: none; } }
+
+/* tables */
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.p { font-family: var(--mono); font-size: 13px; }
+tr.total td { font-weight: 600; background: var(--accent-soft); }
+.tag { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 1px 7px; border-radius: 3px; white-space: nowrap; }
+.tag.l { background: var(--ok-soft); color: var(--ok); }
+.tag.e { background: var(--warn-soft); color: var(--warn); }
+.tag.u { background: var(--unk-soft); color: var(--unk); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
+.tier-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.tier-head .target { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.pick { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 68ch; }
+.src { font-size: 13.5px; columns: 2 280px; column-gap: 28px; padding-left: 18px; display: block; max-width: none; }
+.src li { margin-bottom: 5px; break-inside: avoid; }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Research summary and bill of materials · 9 Nov 2026</div>
+  <h1>What it takes to build a fast Rubik's cube solver</h1>
+  <p class="lede">We are building Tier 1: six StepperOnline 17HE19-2004S stepper motors on TMC5160 drivers, about $440 to $470 in parts plus your own 24 V supply, aiming for a solve of 1 to 1.5 seconds. On paper the motor handles 40 to 45 ms quarter turns at 24 V.</p>
+  <p class="note">The feasibility check is a calculation, not a measurement. No published cube robot names this exact motor, and cube friction is the main unknown. A one-axis bench test settles it before all six axes are built. The parts list below was audited on 10 Nov 2026.</p>
+</header>
+
+<section>
+  <h2>Where each machine sits</h2>
+  <div class="scale" role="img" aria-label="Solve times on a logarithmic scale from 0.1 to 5 seconds">
+    <div class="srow"><div class="slabel"><b>Purdue, Purdubik's Cube (2025)</b><span>0.103 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="dot" style="left:0.8%"></i></div></div>
+    <div class="srow"><div class="slabel"><b>Mitsubishi TOKUFASTbot (2024)</b><span>0.305 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="dot" style="left:28.5%"></i></div></div>
+    <div class="srow"><div class="slabel"><b>MIT, Katz and Di Carlo (2018)</b><span>0.38 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="dot" style="left:34.1%"></i></div></div>
+    <div class="srow"><div class="slabel"><b>Sub1 Reloaded (2016)</b><span>0.637 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="dot" style="left:47.3%"></i></div></div>
+    <div class="srow"><div class="slabel"><b>Flatland and Rose, steppers (2016)</b><span>0.900 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="dot" style="left:56.2%"></i></div></div>
+    <div class="srow"><div class="slabel"><b>Hackaday build, Aaed Musa (2023)</b><span>4.56 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="dot" style="left:97.6%"></i></div></div>
+    <div class="srow build"><div class="slabel"><b>Tier 1, steppers (our build)</b><span>1 to 1.5 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="band" style="left:58.9%;width:10.3%"></i></div></div>
+    <div class="srow build"><div class="slabel"><b>Tier 2, brushless servos</b><span>0.3 to 0.6 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="band" style="left:28.1%;width:17.7%"></i></div></div>
+    <div class="srow build"><div class="slabel"><b>Tier 3, industrial servos</b><span>0.1 to 0.15 s</span></div><div class="track"><i class="tick" style="left:17.7%"></i><i class="tick" style="left:41.1%"></i><i class="tick" style="left:58.9%"></i><i class="tick" style="left:76.6%"></i><i class="band" style="left:0%;width:10.4%"></i></div></div>
+    <div class="srow axis-row"><div class="slabel"></div><div class="axis"><span style="left:0%">0.1 s</span><span style="left:17.7%">0.2</span><span style="left:41.1%">0.5</span><span style="left:58.9%">1</span><span style="left:76.6%">2</span><span style="left:100%">5 s</span></div></div>
+  </div>
+  <p class="note">Logarithmic scale. Dots are recorded times. Blue bands are estimated ranges for the three build tiers below.</p>
+</section>
+
+<section>
+  <h2>Tier 1 motor choice</h2>
+  <p>The pick is the StepperOnline 17HE19-2004S, chosen on price. At $6.36 it is the cheapest of the four, and it has lower winding inductance than the motor the Hackaday build used. Inductance is what starves a stepper of torque at speed. The LDO is the faster motor at five times the price.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Motor</th><th class="n">Holding torque</th><th class="n">Current</th><th class="n">Inductance</th><th class="n">Rotor inertia</th><th class="n">Price each</th></tr></thead>
+    <tbody>
+      <tr class="total"><td>StepperOnline 17HE19-2004S (chosen)</td><td class="n">0.55 Nm</td><td class="n">2.0 A</td><td class="n">2.4 mH</td><td class="n">62 g·cm²</td><td class="n">$6.36</td></tr>
+      <tr><td>StepperOnline 17HS19-2004S1 (Hackaday motor)</td><td class="n">0.59 Nm</td><td class="n">2.0 A</td><td class="n">3.0 mH</td><td class="n">82 g·cm²</td><td class="n">$9.62</td></tr>
+      <tr><td>LDO-42STH48-2504AC</td><td class="n">0.55 Nm</td><td class="n">2.5 A</td><td class="n">1.5 mH</td><td class="n">84.5 g·cm²</td><td class="n">$32.99</td></tr>
+      <tr><td>ADI Trinamic QSH4218-47-28-040</td><td class="n">0.40 Nm</td><td class="n">2.8 A</td><td class="n">0.6 mH</td><td class="n">68 g·cm²</td><td class="n">about $60</td></tr>
+      <tr><td>StepperOnline 23HS22-2804S (NEMA 23)</td><td class="n">1.26 Nm</td><td class="n">2.8 A</td><td class="n">2.5 mH</td><td class="n">not found</td><td class="n">about $25</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Specs are from the manufacturers' pages and spec sheets. StepperOnline and LDO prices were read from the store pages on 9 Nov 2026; StepperOnline prices ship from China, and US stock adds about $2 to $3.50 a motor. The Trinamic price is for a sibling model at Mouser. All three NEMA 17 motors share the same 42 mm body, 48 mm length and 5 mm shaft, so printed parts fit any of them.</p>
+  <h3>Which motors have been documented in a cube solver</h3>
+  <ul>
+    <li><b>17HS19-2004S1:</b> yes. The Hackaday build's parts list links to this exact motor. It solved in 4.56 s, held back by weak TMC2208 drivers and a 75-move solver.</li>
+    <li><b>17HE19-2004S (our pick):</b> no cube solver names it. It is common in hobby CNC builds. Its wire colours differ from the 17HS19, and one builder had to swap the blue and green wires.</li>
+    <li><b>LDO-42STH48-2504AC:</b> no cube solver names it. It is a standard high-speed 3D-printer motor.</li>
+    <li><b>Other fast stepper robots</b> (0.900 s and 1.5 to 2 s) do not publish their motor models.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Will it work?</h2>
+  <div class="pick">
+    <h3>Yes on paper, for quarter turns of 40 ms and slower at 24 V</h3>
+    <p>At 24 V the 17HE19-2004S has roughly 1.5 to 2.6 times the torque a 40 ms quarter turn needs. At 35 ms it has no margin on 24 V, but a 35 V supply restores it. About 20 moves at 40 to 45 ms is 0.8 to 0.9 s of motion.</p>
+  </div>
+  <h3>Torque needed against torque available</h3>
+  <div class="tw"><table>
+    <thead><tr><th class="n">Quarter turn</th><th class="n">Peak speed</th><th class="n">Torque needed</th><th class="n">Available at 24 V</th><th class="n">Available at 35 V</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td class="n">50 ms</td><td class="n">600 rpm</td><td class="n">0.10 to 0.20 Nm</td><td class="n">0.47 Nm</td><td class="n">0.55 Nm</td><td><span class="tag l">comfortable</span></td></tr>
+      <tr><td class="n">45 ms</td><td class="n">667 rpm</td><td class="n">0.12 to 0.22 Nm</td><td class="n">0.41 Nm</td><td class="n">0.55 Nm</td><td><span class="tag l">comfortable</span></td></tr>
+      <tr><td class="n">40 ms</td><td class="n">750 rpm</td><td class="n">0.13 to 0.23 Nm</td><td class="n">0.34 Nm</td><td class="n">0.55 Nm</td><td><span class="tag l">works at 24 V</span></td></tr>
+      <tr><td class="n">35 ms</td><td class="n">857 rpm</td><td class="n">0.16 to 0.26 Nm</td><td class="n">0.26 Nm</td><td class="n">0.51 Nm</td><td><span class="tag e">needs about 35 V</span></td></tr>
+      <tr><td class="n">30 ms</td><td class="n">1,000 rpm</td><td class="n">0.20 to 0.30 Nm</td><td class="n">0.17 Nm</td><td class="n">0.41 Nm</td><td><span class="tag e">marginal at 35 V</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">My calculation. Assumes a cube layer of 150 g·cm² (a commenter's estimate on the MIT build log, close to my own), friction of 0.05 to 0.15 Nm (a guess), and a move that accelerates for half the turn and brakes for the other half. "Available" is the theoretical pull-out torque at peak speed; an open-loop stepper should stay well under it. The rotor inertia is 62 g·cm², from the motor's datasheet. The cube weighs 88.9 g, which puts one layer at roughly 145 g·cm², in line with the 150 used here. For comparison at 40 ms on 24 V, the same sum gives the LDO 0.48 Nm and the Hackaday motor 0.27 Nm.</p>
+  <h3>Evidence from other builds</h3>
+  <ul>
+    <li><b>Same timing has been done with steppers.</b> Flatland and Rose's 0.900 s record robot used six steppers at 50 full steps per quarter turn. Their published timing tables give 35 ms per quarter turn and 56 ms per half turn at the fastest setting, about 0.90 s for 25 moves. Their motor model is not published.</li>
+    <li><b>Generic steppers reach 1.5 to 2 s.</b> iBoot32's 2022 robot did that with DRV8825 drivers, which are weaker than the TMC5160.</li>
+    <li><b>Too little torque fails outright.</b> A University of Illinois team's 0.10 Nm NEMA 14 motors could not turn a face at all. Our motor has 5.5 times that at standstill.</li>
+    <li><b>No precedent for this exact motor.</b> I read nine hobby cube robots and searched by part number. None names the 17HE19-2004S, and most name no motor.</li>
+  </ul>
+  <h3>What could still stop it</h3>
+  <ul>
+    <li><b>Cube friction.</b> Nobody publishes a measured turning torque for a speed cube. A cube tensioned tight enough not to deform may need more than my 0.15 Nm upper guess.</li>
+    <li><b>Lock-ups.</b> If one face stops a few degrees off, the next turn jams. An open-loop stepper then loses steps without knowing. The MIT team blew drive transistors this way.</li>
+    <li><b>Driver heat.</b> The TMC5160 board needs a fan above 2 A. This motor runs at 2.0 A, right at that limit, and you have chosen to run without a fan. If a driver overheats it cuts the motor current, which shows up as missed turns in long runs.</li>
+    <li><b>Driver voltage ceiling.</b> The standard TMC5160 board stops at 35 V, so a 36 V supply must be trimmed down to about 33 V.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>What actually sets the solve time</h2>
+  <p>Solve time is roughly the number of moves multiplied by the time per move, plus a few tens of milliseconds for the camera and solver. Both factors differ by about a factor of ten between the Hackaday build and the record.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Machine</th><th>Solver</th><th class="n">Moves</th><th class="n">Per quarter turn</th><th>Actuator</th></tr></thead>
+    <tbody>
+      <tr><td>Hackaday build</td><td>CFOP (human method)</td><td class="n">50 to 75</td><td class="n">about 92 ms</td><td>Open-loop NEMA 17 stepper, one at a time</td></tr>
+      <tr><td>MIT 2018</td><td>min2phase</td><td class="n">19 to 23</td><td class="n">10 ms, one every 15 ms</td><td>Kollmorgen ServoDisc, 2000-line encoder, 40 V</td></tr>
+      <tr><td>Mitsubishi 2024</td><td>Proprietary</td><td class="n">about 15</td><td class="n">9 ms</td><td>Mitsubishi servomotors, model not published</td></tr>
+      <tr><td>Purdue 2025</td><td>rob-twophase</td><td class="n">not published</td><td class="n">about 5.5 ms (my estimate)</td><td>Kollmorgen AKM2G-24F</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>Solver:</b> switching from CFOP to a two-phase solver cuts 75 moves to about 20. It is free software and the largest single gain.</li>
+    <li><b>Parallel moves:</b> rob-twophase counts opposite faces turning together as one move, averaging about 15 moves, found within 10 ms.</li>
+    <li><b>Torque over inertia:</b> quarter-turn time depends on how hard the motor can accelerate its own rotor plus one cube layer. This is where steppers lose.</li>
+    <li><b>Corner cutting:</b> starting the next face before the last one has stopped. It needs closed-loop position feedback and breaks cubes when mistimed.</li>
+    <li><b>The cube:</b> at record speed, stock cubes snap. Purdue used a custom SLS nylon core tensioned too tight to turn by hand.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>The record machine, part by part</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Part</th><th>What Purdue used</th><th>Confidence</th></tr></thead>
+    <tbody>
+      <tr><td>Motors</td><td class="p">6× Kollmorgen AKM2G-24F</td><td>One trade article names it; its quoted 3,400 rpm matches the datasheet</td></tr>
+      <tr><td>Drives</td><td class="p">Kollmorgen AKD2G</td><td>Kollmorgen's own promotion; exact variant not published</td></tr>
+      <tr><td>Controller</td><td class="p">Kollmorgen PCMM2G</td><td>Kollmorgen's own promotion</td></tr>
+      <tr><td>Cameras</td><td>2× Flir machine vision, 10 µs exposure, 128×124 px crop</td><td>One article; model not published</td></tr>
+      <tr><td>Colour reading</td><td>Raw RGB values, no image processing</td><td>One article</td></tr>
+      <tr><td>Solver</td><td class="p">rob-twophase (Elias Frantar)</td><td>One article, links the repo</td></tr>
+      <tr><td>Cube</td><td>Custom SLS nylon core, lubricated, very high tension</td><td>Two articles</td></tr>
+      <tr><td>Motion</td><td>Trapezoidal profile, about 12 million °/s², corner cutting</td><td>One article</td></tr>
+      <tr><td>Compute, 103 ms breakdown</td><td>Not published</td><td>Not found</td></tr>
+    </tbody>
+  </table></div>
+  <h3>AKM2G-24F datasheet figures</h3>
+  <div class="tw"><table>
+    <tbody>
+      <tr><td>Frame</td><td class="n">58 mm flange, about 2.0 kg</td></tr>
+      <tr><td>Continuous stall torque</td><td class="n">1.86 Nm</td></tr>
+      <tr><td>Peak torque</td><td class="n">7.24 Nm</td></tr>
+      <tr><td>Rotor inertia</td><td class="n">0.279 kg·cm²</td></tr>
+      <tr><td>Peak torque ÷ rotor inertia</td><td class="n">about 260,000 rad/s² (15 million °/s²)</td></tr>
+      <tr><td>Rated speed</td><td class="n">3,400 rpm at 120 VAC, 7,200 rpm at 240 VAC</td></tr>
+      <tr><td>Max mechanical speed</td><td class="n">8,000 rpm</td></tr>
+      <tr><td>Paired drive in the guide</td><td class="n">AKD2G-SPx-6V06 (6 A, 120/240 VAC)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">From Kollmorgen's AKM2G selection guide. The trade article calls the motors "low-voltage" and quotes 5.97 Nm, but the low-voltage catalogue has no F winding and 5.97 Nm belongs to the 24PL. I believe the model is right and that label is wrong.</p>
+</section>
+
+<section>
+  <h2>Three build tiers</h2>
+  <div class="legend">
+    <span><span class="tag l">listed</span> price seen on a seller page this week</span>
+    <span><span class="tag e">estimate</span> my rough figure, check before buying</span>
+    <span><span class="tag u">unknown</span> no price found</span>
+  </div>
+
+  <div class="tier-head"><h3>Tier 1: stepper build (chosen)</h3><span class="target">target 1 to 1.5 s · about $440 to $470</span></div>
+  <p>The Hackaday layout with stronger drivers, a two-phase solver, a real speed cube and cameras. At 40 to 45 ms per quarter turn and about 20 moves, motion takes 0.8 to 0.9 s. This list was audited on 10 Nov 2026 against the carts and the parts' own datasheets.</p>
+  <h3>Ordered</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Each</th><th class="n">Subtotal</th><th>Price basis</th></tr></thead>
+    <tbody>
+      <tr><td>StepperOnline 17HE19-2004S stepper motor, US warehouse</td><td class="n">6</td><td class="n">$8.45</td><td class="n">$50.70</td><td><span class="tag l">seen</span> in your StepperOnline checkout</td></tr>
+      <tr><td>StepperOnline packing fee</td><td class="n"></td><td class="n"></td><td class="n">$1.90</td><td><span class="tag l">seen</span> in your StepperOnline checkout</td></tr>
+      <tr><td>TMC5160 SilentStepStick driver</td><td class="n">7</td><td class="n">$19.20</td><td class="n">$134.40</td><td><span class="tag l">seen</span> in your Mouser cart; six for the build, one spare</td></tr>
+      <tr><td>Teensy 4.1 with headers (SparkFun DEV-16996)</td><td class="n">1</td><td class="n">$35.95</td><td class="n">$35.95</td><td><span class="tag l">seen</span> in your Mouser cart</td></tr>
+      <tr><td>Jumper wires, 6", packs of 20 (male-female and female-female)</td><td class="n">2</td><td class="n">$2.75</td><td class="n">$5.50</td><td><span class="tag l">seen</span> in your Mouser cart</td></tr>
+      <tr><td>22 AWG stranded wire, black, 25 ft</td><td class="n">1</td><td class="n">$5.95</td><td class="n">$5.95</td><td><span class="tag l">seen</span> in your Mouser cart</td></tr>
+      <tr><td>Mouser estimated tariff</td><td class="n"></td><td class="n"></td><td class="n">$12.88</td><td><span class="tag l">seen</span> in your Mouser cart</td></tr>
+      <tr><td>Mouser UPS Ground shipping</td><td class="n"></td><td class="n"></td><td class="n">$9.39</td><td><span class="tag l">seen</span> in your Mouser cart</td></tr>
+      <tr><td>YJ YuLong V2 M speed cube</td><td class="n">1</td><td class="n">$8.99</td><td class="n">$8.99</td><td><span class="tag e">listed price</span> I did not see how many you ordered</td></tr>
+      <tr><td>Cubicle Silicone Lube, Weight 3, 5cc</td><td class="n">1</td><td class="n">$3.89</td><td class="n">$3.89</td><td><span class="tag e">listed price</span> I did not see it in a cart</td></tr>
+      <tr class="total"><td>Ordered subtotal</td><td class="n"></td><td class="n"></td><td class="n">$269.55</td><td></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">I saw the carts but not the final orders, so three things may differ. If you swapped to the motor 5-pack plus one single, motors are about $6.78 less. If you added the red wire, add $5.95. Shipping from StepperOnline and TheCubicle, and sales tax, are not included.</p>
+  <h3>Still to buy</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Subtotal</th><th>Price basis</th></tr></thead>
+    <tbody>
+      <tr><td>100 µF 50 V capacitors, one per driver</td><td class="n">7</td><td class="n">$3 to $5</td><td><span class="tag e">estimate</span></td></tr>
+      <tr><td>M3 screws: 24 × 10 mm for the motors, 6 × 6 mm for the adapters</td><td class="n">1 box</td><td class="n">$8 to $10</td><td><span class="tag e">estimate</span> an assortment box covers both</td></tr>
+      <tr><td>Screw terminals or protoboard for the 24 V wiring</td><td class="n">1</td><td class="n">$5 to $10</td><td><span class="tag e">estimate</span></td></tr>
+      <tr><td>Micro-USB cable for the Teensy</td><td class="n">1</td><td class="n">$0 to $5</td><td><span class="tag e">estimate</span> the board does not include one</td></tr>
+      <tr><td>Printed bench stand, UTA FabLab</td><td class="n">1</td><td class="n">about $5</td><td><span class="tag e">estimate</span> from the model at $0.05 per gram</td></tr>
+      <tr><td>Printed six-motor frame and six shaft adapters</td><td class="n">1 set</td><td class="n">$15 to $30</td><td><span class="tag e">estimate</span> not designed yet</td></tr>
+      <tr><td>Arducam colour global-shutter USB camera (OV9782)</td><td class="n">2</td><td class="n">$120</td><td><span class="tag e">estimate</span> mono version listed at $60</td></tr>
+      <tr><td>LED lighting for the cameras</td><td class="n">1</td><td class="n">$10 to $15</td><td><span class="tag e">estimate</span></td></tr>
+      <tr><td>24 V power supply, about 10 A for six motors</td><td class="n">1</td><td class="n">not included</td><td>You are supplying this</td></tr>
+      <tr class="total"><td>Still-to-buy subtotal</td><td class="n"></td><td class="n">$166 to $200</td><td></td></tr>
+      <tr class="total"><td>Whole Tier 1 build</td><td class="n"></td><td class="n">$436 to $470</td><td>Without cameras and lighting: $306 to $335</td></tr>
+    </tbody>
+  </table></div>
+  <h3>What the audit changed</h3>
+  <ul>
+    <li><b>Drivers:</b> six became seven, matching what is in the cart.</li>
+    <li><b>Fan:</b> removed, as you decided it is not needed.</li>
+    <li><b>Motor price:</b> now the $8.45 US-warehouse price from your checkout, plus the packing fee.</li>
+    <li><b>Added:</b> Mouser's tariff and shipping, the wires, the lube, M3 screws, a USB cable and the printed parts. None of these were in the earlier list.</li>
+    <li><b>Split in two:</b> the old single "wiring and lighting" and "frame and fasteners" estimates are now separate lines.</li>
+  </ul>
+  <h3>Checks against the parts' own documents</h3>
+  <ul>
+    <li><b>Motor:</b> the 17HE19-2004S datasheet confirms 0.55 Nm, 2.0 A, 1.30 Ω, 2.40 mH, a 62 g·cm² rotor and 0.27 kg. Its drawing confirms a 5 mm shaft 24 mm long with a 15 mm flat, M3 holes on a 31 mm square and a 22 mm boss.</li>
+    <li><b>Motor cable:</b> 1 m of 24 AWG wire ending in a 4-pin 2.54 mm plug. The wires run B−, A−, B+, A+, which does not match the driver's pin order, where each coil's two pins sit together. Two pins have to be moved in the plug before it goes on the driver.</li>
+    <li><b>Driver and motor:</b> the driver's 3 A and 10 to 35 V limits cover the motor's 2.0 A on a 24 V supply.</li>
+    <li><b>Driver and Teensy:</b> both use 3.3 V logic. The driver must be set up over SPI.</li>
+    <li><b>Driver header pins:</b> I have not confirmed whether the board arrives with its pins soldered. Plan on a soldering iron being needed.</li>
+    <li><b>Cube:</b> TheCubicle lists it at 56.0 mm and 88.9 g, magnetic.</li>
+  </ul>
+  <h3>Where to buy</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Part</th><th>Mouser</th><th>Otherwise</th></tr></thead>
+    <tbody>
+      <tr><td>Teensy 4.1</td><td>Yes. With headers (DEV-16996) is $35.95, 361 in stock. The bare board (DEV-16771) is restricted.</td><td>SparkFun, $31.50 for the bare board</td></tr>
+      <tr><td>TMC5160 SilentStepStick</td><td>Yes, 620 in stock; Mouser will drop it when stock runs out</td><td>DigiKey</td></tr>
+      <tr><td>Mean Well LRS-350-24</td><td>Yes, 362 in stock</td><td>Bravo Electro, Jameco</td></tr>
+      <tr><td>17HE19-2004S motor</td><td>No. Mouser carries no StepperOnline parts</td><td>StepperOnline direct, or its Amazon store</td></tr>
+      <tr><td>Arducam camera</td><td>Not found</td><td>Arducam, RobotShop</td></tr>
+      <tr><td>Speed cube, filament, fasteners, magnets</td><td>No</td><td>Cube shops, Amazon, hardware suppliers</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">The drivers, the Teensy and a power supply can come from Mouser. The motors, cube and cameras cannot. Its own NEMA 17 motors start at $32.81 and are low-current types that suit this job poorly. Mouser stock and prices were read from the live pages on 9 Nov 2026.</p>
+
+  <div class="tier-head"><h3>Tier 2: brushless servo build</h3><span class="target">target 0.3 to 0.6 s · about $1,300 to $2,100</span></div>
+  <p>The MIT approach with current off-the-shelf parts: six brushless motors with encoders and closed-loop field-oriented drivers. The motor choice below is a starting point. Its rotor inertia is not published where I looked, so one axis needs testing before buying six.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Each</th><th class="n">Subtotal</th><th>Price basis</th></tr></thead>
+    <tbody>
+      <tr><td>mjbots mj5208 brushless motor</td><td class="n">6</td><td class="n">$74</td><td class="n">$444</td><td><span class="tag l">listed</span> reseller</td></tr>
+      <tr><td>moteus-c1 controller (or moteus-n1 at $149)</td><td class="n">6</td><td class="n">$69 to $149</td><td class="n">$414 to $894</td><td><span class="tag l">listed</span> reseller</td></tr>
+      <tr><td>CAN-FD USB adapter</td><td class="n">1</td><td class="n">$100</td><td class="n">$100</td><td><span class="tag e">estimate</span></td></tr>
+      <tr><td>48 V supply, 600 to 1,000 W, plus bulk capacitors</td><td class="n">1</td><td class="n">$60 to $120</td><td class="n">$60 to $120</td><td><span class="tag e">estimate</span></td></tr>
+      <tr><td>Colour global-shutter USB camera</td><td class="n">2</td><td class="n">$60</td><td class="n">$120</td><td><span class="tag e">estimate</span></td></tr>
+      <tr><td>Speed cubes (expect to break several)</td><td class="n">5</td><td class="n">$10 to $20</td><td class="n">$50 to $100</td><td><span class="tag e">estimate</span></td></tr>
+      <tr><td>Square drives and shaft couplers</td><td class="n">6</td><td class="n"></td><td class="n">$40 to $100</td><td><span class="tag e">estimate</span></td></tr>
+      <tr><td>Rigid frame, aluminium plate or extrusion</td><td class="n">1</td><td class="n"></td><td class="n">$100 to $200</td><td><span class="tag e">estimate</span></td></tr>
+      <tr class="total"><td>Total</td><td class="n"></td><td class="n"></td><td class="n">$1,328 to $2,078</td><td></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Alternative drivers: ODrive Micro at $89 or ODrive Pro at $229 each (listed). A one-axis starter is the moteus-c1 developer kit at $149 (listed), which includes one mj5208 motor.</p>
+
+  <div class="tier-head"><h3>Tier 3: industrial servos, the record recipe</h3><span class="target">target 0.1 to 0.15 s · $33,000 and up</span></div>
+  <p>The Purdue hardware. Students built it with corporate sponsorship and co-op earnings, and it also needs a custom cube core.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Each</th><th class="n">Subtotal</th><th>Price basis</th></tr></thead>
+    <tbody>
+      <tr><td>Kollmorgen AKM2G-24F motor</td><td class="n">6</td><td class="n">about $2,475</td><td class="n">about $14,850</td><td><span class="tag e">estimate</span> reseller price of the older AKM24D</td></tr>
+      <tr><td>Kollmorgen AKD2G-SPE-6V06S drive</td><td class="n">6</td><td class="n">$3,035</td><td class="n">$18,210</td><td><span class="tag l">listed</span> reseller</td></tr>
+      <tr><td>Kollmorgen PCMM2G controller</td><td class="n">1</td><td class="n"></td><td class="n"></td><td><span class="tag u">unknown</span></td></tr>
+      <tr><td>Flir machine-vision cameras</td><td class="n">2</td><td class="n"></td><td class="n"></td><td><span class="tag u">unknown</span> model not published</td></tr>
+      <tr><td>Custom SLS nylon cube core, machined shafts, frame</td><td class="n">1</td><td class="n"></td><td class="n"></td><td><span class="tag u">unknown</span></td></tr>
+      <tr class="total"><td>Motors and drives only</td><td class="n"></td><td class="n"></td><td class="n">about $33,060</td><td></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>What I would do</h2>
+  <div class="pick">
+    <h3>Build Tier 1, and bench-test one axis before buying six motors</h3>
+    <p>The solver, camera reading, move scheduler and cube handling are the same work at every tier. Building them on steppers gets a working machine near 1 second, and a later brushless upgrade replaces only the actuators and their drivers.</p>
+  </div>
+  <ol>
+    <li><b>Solver on your computer.</b> Build rob-twophase and get from a scramble to a move list. Free, and it works before any hardware arrives.</li>
+    <li><b>One axis on a bench.</b> One 17HE19-2004S motor and one TMC5160 on 24 V, turning one face of a tensioned speed cube. Start at 60 ms per quarter turn and shorten it until steps are lost. If it holds 40 to 45 ms, order the other five.</li>
+    <li><b>Six axes with manual entry.</b> Frame, six motors, a move scheduler. Type in the cube state and solve it.</li>
+    <li><b>Parallel opposite faces.</b> Run the two motors on an axis together, using the solver's axial mode.</li>
+    <li><b>Cameras.</b> Two cameras at opposite corners, fixed lighting, fixed pixel regions per sticker.</li>
+    <li><b>Then upgrade actuators.</b> Buy one brushless motor and driver, repeat the one-axis test, and only then buy the other five.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Open questions</h2>
+  <ul>
+    <li><b>Cube turning torque.</b> Unmeasured. It is the largest uncertainty in the Tier 1 feasibility check.</li>
+    <li><b>How the motor grips the cube.</b> Printed centre-cap adapters as in the Hackaday build, or metal square drives pressed into the centre recess as MIT did. Not yet decided.</li>
+    <li><b>Tools you have.</b> A 3D printer covers Tier 1. Tier 2 wants metal square drives and a stiff frame.</li>
+    <li><b>Tier 2 motor inertia.</b> I did not find a rotor inertia figure for the mj5208, so its quarter-turn time is untested.</li>
+    <li><b>Unread sources.</b> Kollmorgen's site, The Verge and Design News blocked automated reading. The Verge article is the likeliest to hold more Purdue detail.</li>
+    <li><b>Prices.</b> Most Tier 1 prices and several Tier 2 prices are my estimates. Reseller prices for Kollmorgen parts are not official list prices.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Sources</h2>
+  <ul class="src">
+    <li><a href="https://hackaday.io/project/190071-rubiks-cube-solver">Hackaday: Rubik's Cube Solver (Aaed Musa)</a></li>
+    <li><a href="https://engineering.purdue.edu/ECE/news/2025/purdue-ece-students-shatter-guinness-world-record-for-fastest-puzzle-cube-solving-robot">Purdue ECE announcement</a></li>
+    <li><a href="https://www.designfax.net/cms/dfx/opens/article-view-dfx.php?nid=4&bid=1534&et=featurearticle&pn=02">Designfax: names the AKM2G-24F</a></li>
+    <li><a href="https://www.micromech.co.uk/worlds-fastest-rubiks-cube-solve-powered-by-kollmorgen/">Micromech/Kollmorgen PACK EXPO write-up</a></li>
+    <li><a href="https://www.micromech.co.uk/wp-content/uploads/2026/03/akm2g_selection_guide.pdf">Kollmorgen AKM2G selection guide (PDF)</a></li>
+    <li><a href="https://www.micromech.co.uk/wp-content/uploads/2026/03/akm2g_lowvoltage_catalogue.pdf">Kollmorgen AKM2G low-voltage catalogue (PDF)</a></li>
+    <li><a href="https://www.zmescience.com/science/news-science/robot-rubik-cube-record/">ZME Science: cameras, solver, cube core</a></li>
+    <li><a href="https://www.popsci.com/technology/fastest-rubiks-cube-robot/">Popular Science</a></li>
+    <li><a href="https://heise.de/-10385648">heise online</a></li>
+    <li><a href="https://www.youtube.com/watch?v=sXxh6QuY2ew">Purdue Engineering video</a></li>
+    <li><a href="https://build-its-inprogress.blogspot.com/2018/03/the-rubiks-contraption.html">MIT build log: The Rubik's Contraption</a></li>
+    <li><a href="https://os.mbed.com/users/benkatz/code/rubix_controller/">MIT motor controller firmware</a></li>
+    <li><a href="https://github.com/efrantar/rob-twophase">rob-twophase solver</a></li>
+    <li><a href="https://www.cc-link.org/en/usecases/cclinkie_tsn_mitsubishielectric.html">Mitsubishi TOKUFASTbot case study</a></li>
+    <li><a href="https://www.livescience.com/56828-robot-sets-rubiks-cube-world-record.html">Live Science: Sub1 Reloaded</a></li>
+    <li><a href="https://www.omc-stepperonline.com/e-series-nema-17-bipolar-55ncm-77-88oz-in-2a-42x48mm-4-wires-w-1m-cable-connector-17he19-2004s">StepperOnline 17HE19-2004S</a></li>
+    <li><a href="https://www.omc-stepperonline.com/nema-17-bipolar-59ncm-84oz-in-2a-42x48mm-4-wires-w-1m-cable-connector-17hs19-2004s1">StepperOnline 17HS19-2004S1</a></li>
+    <li><a href="https://forum.v1e.com/t/stepper-motor-config-17he19-2004s/42409">V1 Engineering thread on 17HE19-2004S wiring</a></li>
+    <li><a href="https://cdn.hackaday.io/files/1900718131997664/Bill%20of%20Materials.xlsx">Hackaday build parts list (spreadsheet)</a></li>
+    <li><a href="https://www.mouser.com/en/ProductDetail/Analog-Devices-Maxim-Integrated/TMC5160SilentStepStick?qs=TuK3vfAjtkU%2FC%2Fksd1vRwg%3D%3D">TMC5160 SilentStepStick at Mouser</a></li>
+    <li><a href="https://www.sparkfun.com/teensy-4-1.html">Teensy 4.1 at SparkFun</a></li>
+    <li><a href="https://www.thecubicle.com/products/yj-yulong-v2-m">YJ YuLong V2 M at TheCubicle</a></li>
+    <li><a href="https://biqu.equipment/products/ldo-42sth48-2504ac-reva-motor-driver">LDO motor at BIQU</a></li>
+    <li><a href="https://kb-3d.com/store/index.php?controller=attachment&id_attachment=6">LDO-42STH48-2504AC spec sheet (PDF)</a></li>
+    <li><a href="https://ldomotion.com/products/ldo42sth482504ac">LDO-42STH48-2504AC product page</a></li>
+    <li><a href="https://kb-3d.com/store/stepper-motors-servos/371-ldo-stepper-motor-nema-17-42sth48-2504ac-speedy-power-1651971790651.html">LDO motor at KB-3D</a></li>
+    <li><a href="https://dfh.fm/products/ldo-nema-17-motor-ldo-42sth48-2504ac-dfh">LDO motor at DFH</a></li>
+    <li><a href="https://static.maritex.eu/file/display/5sXxpHH1SP-JwnhJEZ0lhfX-xdYKZRi3/17HS19-2004S1_Full_Datasheet.pdf">17HS19-2004S1 datasheet (PDF)</a></li>
+    <li><a href="https://www.digikey.com/en/products/detail/trinamic-motion-control-gmbh/QSH4218-47-28-040/5972705">QSH4218-47-28-040 at DigiKey</a></li>
+    <li><a href="https://github.com/bilson/HighFrequencyTwister">Flatland and Rose robot: code and timing tables</a></li>
+    <li><a href="https://hackaday.com/2016/01/27/robot-solves-rubiks-cube-in-just-one-second/">Hackaday on the Flatland and Rose robot</a></li>
+    <li><a href="https://blog.arduino.cc/2022/08/01/arduino-controlled-robot-solves-rubiks-cubes-in-a-couple-seconds/">iBoot32's 1.5 to 2 s robot</a></li>
+    <li><a href="https://courses.grainger.illinois.edu/ece445/getfile.asp?id=6925">University of Illinois report: motors too weak (PDF)</a></li>
+    <li><a href="https://learn.watterott.com/silentstepstick/comparison/">TMC5160 SilentStepStick limits</a></li>
+    <li><a href="https://www.digikey.com.au/en/products/detail/analog-devices-inc-maxim-integrated/TMC5160SILENTSTEPSTICK/9990281">TMC5160 SilentStepStick at DigiKey</a></li>
+    <li><a href="https://www.mouser.com/en/ProductDetail/SparkFun/DEV-16771?qs=vmHwEFxEFR%2FenEKd%2FmWpTA%3D%3D">Teensy 4.1 at Mouser</a></li>
+    <li><a href="https://www.mouser.com/ProductDetail/MEAN-WELL/LRS-350-24?qs=ah3jBNVE1PT%2BkwLcackrGA%3D%3D">Mean Well LRS-350-24 at Mouser</a></li>
+    <li><a href="https://reach.dog/shop/mjbots-robotic-systems/products/moteus-c1">moteus-c1 listing</a></li>
+    <li><a href="https://reach.dog/shop/mjbots-robotic-systems/products/mj5208">mj5208 motor listing</a></li>
+    <li><a href="https://shop.odriverobotics.com/collections/motor-controllers">ODrive motor controllers</a></li>
+    <li><a href="https://servosupplier.com/products/akd2g-spe-6v06s-a100-0000">AKD2G-SPE-6V06S reseller listing</a></li>
+    <li><a href="https://servosupplier.com/products/akm24d-ancn2-00">AKM24D reseller listing</a></li>
+    <li><a href="https://robotshop.com/products/arducam-120fps-global-shutter-usb-camera-board-1mp-ov9281-uvc-m12-lens">Arducam OV9281 camera listing</a></li>
+  </ul>
+</section>
+</div>
