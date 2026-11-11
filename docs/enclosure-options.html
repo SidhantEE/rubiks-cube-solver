@@ -1,0 +1,730 @@
+<title>Enclosure Options</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout: filament ranking first (the goal), then a grid of model cards, then one comparison table and the sources. */
+:root {
+  --bg: #f1f3ef;
+  --surface: #ffffff;
+  --stage: #e4e8e2;
+  --ink: #1b201d;
+  --muted: #586159;
+  --line: #d3d9d1;
+  --accent: #0d6b5f;
+  --bar: #2f8f80;
+  --bar-now: #8a938c;
+  --ok-bg: #d6efe2;
+  --ok-ink: #0c5a3c;
+  --sketch-bg: #ece6d3;
+  --sketch-ink: #5e4a12;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131615; --surface: #1c201e; --stage: #2a302d; --ink: #e8ece9; --muted: #a0aaa3;
+    --line: #333a36; --accent: #56cdb6; --bar: #3fae9b; --bar-now: #6f7873;
+    --ok-bg: #173d2e; --ok-ink: #9be0c0; --sketch-bg: #3a331c; --sketch-ink: #e6d294;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131615; --surface: #1c201e; --stage: #2a302d; --ink: #e8ece9; --muted: #a0aaa3;
+  --line: #333a36; --accent: #56cdb6; --bar: #3fae9b; --bar-now: #6f7873;
+  --ok-bg: #173d2e; --ok-ink: #9be0c0; --sketch-bg: #3a331c; --sketch-ink: #e6d294;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55; }
+.page {
+  max-width: 1240px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 30px;
+}
+h1, h2, h3 { font-family: var(--display); font-weight: 600; text-wrap: balance; margin: 0; }
+h1 { font-size: 30px; letter-spacing: -0.01em; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
+p { margin: 0; }
+a { color: var(--accent); }
+.lede { color: var(--muted); max-width: 68ch; margin-top: 6px; }
+.section { display: flex; flex-direction: column; gap: 12px; }
+.note { color: var(--muted); font-size: 14px; max-width: 68ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+
+.rank { padding: 16px 18px; display: grid; grid-template-columns: minmax(0, 15em) minmax(0, 1fr) 5.5em; gap: 7px 12px; align-items: center; font-size: 14px; }
+.rank .name { min-width: 0; overflow-wrap: anywhere; }
+.rank .name b { font-family: var(--display); font-weight: 600; color: var(--muted); margin-right: 6px; }
+.rank .track { height: 12px; border-radius: 3px; background: var(--stage); overflow: hidden; }
+.rank .fill { height: 100%; background: var(--bar); border-radius: 3px; min-width: 2px; }
+.rank .fill.now { background: var(--bar-now); }
+.rank .val { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 560px) { .rank { grid-template-columns: minmax(0, 1fr) 5.5em; } .rank .track { grid-column: 1 / -1; order: 3; } }
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; padding: 12px 16px; }
+.control { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-width: 0; }
+.control-label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatches input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.swatches label { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px 5px 6px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; font-size: 13px; }
+.swatches .chip { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); }
+.swatches input:checked + label { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); font-weight: 600; }
+.swatches input:focus-visible + label, input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type="range"] { width: 150px; max-width: 100%; accent-color: var(--accent); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line); display: inline-block; }
+
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 1040px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 660px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.card { overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.stage { background: var(--stage); aspect-ratio: 4 / 3; max-width: 100%; position: relative; }
+.stage canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; }
+.stage canvas:active { cursor: grabbing; }
+.card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.letter { font-family: var(--display); font-weight: 600; color: var(--muted); }
+.pill { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.pill.sketch { background: var(--sketch-bg); color: var(--sketch-ink); }
+.figure { font-variant-numeric: tabular-nums; font-size: 14px; }
+.figure b { font-family: var(--display); font-size: 20px; font-weight: 600; }
+dl.facts { margin: 0; display: grid; grid-template-columns: 5.2em minmax(0, 1fr); gap: 6px 10px; font-size: 13.5px; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; vertical-align: top; padding: 9px 14px; border-bottom: 1px solid var(--line); }
+thead th { font-family: var(--display); font-weight: 600; }
+td.num { text-align: right; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+.prose { max-width: 68ch; display: flex; flex-direction: column; gap: 10px; }
+ul.sources { margin: 0; padding-left: 18px; max-width: 72ch; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Enclosure options</h1>
+    <p class="lede">Ten ways to hold six NEMA 17 motors around the 56 mm cube, ranked by how much plastic they need. In every one, each side motor bolts by its face and also rests on something under its body that runs down to the base. Every design keeps the motor face 32 mm from the cube face, so the adapter and firmware do not change.</p>
+  </header>
+
+  <section class="section">
+    <h2>Printed plastic per design</h2>
+    <div class="panel rank" id="rank"></div>
+    <p class="note">Solid volume of the printed frame parts, as if printed 100% full. Use it to compare designs with each other; real filament use is lower and depends on infill. A's figure comes from the CAD scripts. The others are measured from the simplified models on this page.</p>
+  </section>
+
+  <section class="section">
+    <div class="panel controls">
+      <div class="control">
+        <span class="control-label" id="lbl-colour">Filament</span>
+        <div class="swatches" role="radiogroup" aria-labelledby="lbl-colour">
+          <input type="radio" name="colour" id="c-orange" value="#ef6a1a" checked><label for="c-orange"><span class="chip" style="background:#ef6a1a"></span>Orange</label>
+          <input type="radio" name="colour" id="c-green" value="#3aa648"><label for="c-green"><span class="chip" style="background:#3aa648"></span>Green</label>
+          <input type="radio" name="colour" id="c-red" value="#c5252d"><label for="c-red"><span class="chip" style="background:#c5252d"></span>Red</label>
+          <input type="radio" name="colour" id="c-yellow" value="#efbe2c"><label for="c-yellow"><span class="chip" style="background:#efbe2c"></span>Yellow</label>
+          <input type="radio" name="colour" id="c-purple" value="#7b4bc4"><label for="c-purple"><span class="chip" style="background:#7b4bc4"></span>Purple</label>
+          <input type="radio" name="colour" id="c-white" value="#e8e5dc"><label for="c-white"><span class="chip" style="background:#e8e5dc"></span>White</label>
+        </div>
+      </div>
+      <div class="control">
+        <label class="control-label" for="turn">Turn</label>
+        <input type="range" id="turn" min="-180" max="180" step="1" value="-58">
+      </div>
+      <div class="legend" aria-label="What the colours in the models mean">
+        <span><i id="key-print" style="background:#ef6a1a"></i>Printed</span>
+        <span><i style="background:#c9b48f"></i>Plywood</span>
+        <span><i style="background:#b9bec4"></i>Aluminium or steel</span>
+        <span><i style="background:#2b2d31"></i>Motor</span>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="note">Drag any model to turn all of them. Only A has been modeled in full and checked for collisions. B to J are concept models: the load paths are drawn honestly, but none has been checked for collisions, printing without supports, or camera view.</p>
+  </section>
+
+  <section class="section">
+    <h2>Side by side</h2>
+    <div class="panel tablewrap">
+      <table>
+        <thead><tr><th scope="col">Design</th><th scope="col">Printed</th><th scope="col">To buy</th><th scope="col">Loading the cube</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Which one</h2>
+    <div class="prose">
+      <p><strong>J, Rail sleds,</strong> is my pick if you are willing to buy a few parts. It needs very little printing, the steel brackets are stiffer than anything printed, and it is the only bolted design where loading is one screw per side motor.</p>
+      <p><strong>B, Skeleton cross,</strong> is the pick if you want to print everything and buy nothing. It is the current, checked design with the excess width removed, so it needs the least new design work.</p>
+      <p><strong>E, Extrusion cube,</strong> is the stiffest for its plastic and the closest to what the fast robots use. It costs the most in bought parts and needs twelve square cuts.</p>
+      <p>Every design has the same loading problem: each adapter tip sits 4 mm inside the cube, so motors have to back away before a cube can go in. The designs differ mainly in how many motors must move and how.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Where the ideas came from</h2>
+    <ul class="sources">
+      <li><a href="https://buildits-amk.pages.dev/posts/2018-03-07-the-rubik-s-contraption">The Rubik's Contraption</a> (Ben Katz and Jared Di Carlo, 0.38 s). Their box is laser-cut acrylic on scavenged 80/20 extrusion, each shaft can be loosened and slid out to load the cube, and two cameras look at opposite corners. Behind E, H and the sliding motors in I and J.</li>
+      <li><a href="https://hackaday.io/project/189868">Coobycs</a>. Six NEMA 17 motors on V-slot profiles joined by 3D-printed connectors that also hold the motors. Behind E.</li>
+      <li><a href="https://www.instructables.com/Tesseract-Rubiks-Cube-Robot/">Tesseract</a>. Its write-up stresses a frame that does not flex under stepper torque, because flex jams the cube. I could only read the search summary of this page, not the build steps.</li>
+      <li><a href="https://www.instructables.com/Rubiks-Cube-Solver-2">Instructables Rubik's Cube Solver</a> (Teensy 4.1, TMC2208). Uses mounts that the motors slide into. Behind the body-gripping sockets in I. Search summary only.</li>
+      <li><a href="https://hackaday.com/2016/01/27/robot-solves-rubiks-cube-in-just-one-second">Flatland and Rose robot</a>. A 3D-printed frame with six steppers and four webcams, the same family as A and B.</li>
+      <li><a href="https://srikarg89.github.io/cubie">Cubie</a>. Their jams came from loose shaft adapters, which needed many iterations. A reminder that the adapter fit matters as much as the frame.</li>
+    </ul>
+    <p class="note">F and G are my own layouts and are not taken from a published robot.</p>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  var T = window.THREE;
+  function V(x, y, z) { return new T.Vector3(x, y, z); }
+  var X = T ? V(1, 0, 0) : null, Y = T ? V(0, 1, 0) : null, Z = T ? V(0, 0, 1) : null;
+  var FACE = 60, INNER = 54, mat = {}, acc = 0;
+
+  // ----------------------------------------------------------------- text
+  var DESIGNS = [
+    { id: "A", name: "Cross and towers", status: "ok", pill: "Current, collision-checked", fixed: 671,
+      idea: "The frame you have now. A deck on four legs, four towers, and a cross plate on top.",
+      held: "Each side motor bolts to a tower plate and its body rests in a cradle. The top and bottom motors bolt to the cross plates.",
+      print: "6 parts", buy: "Nothing",
+      load: "Top off, then slide four towers out 5 mm on their slots.",
+      watch: "Uses far more plastic than any other design here." },
+    { id: "B", name: "Skeleton cross", status: "sketch", pill: "Concept",
+      idea: "The current layout with every part narrowed to the width of a motor and each cradle slimmed to two webs.",
+      held: "Same plates as A. Each side motor bolts by its face and its body rests on two thin webs that stand on the tower foot.",
+      print: "6 parts", buy: "Nothing",
+      load: "Same as A.",
+      watch: "Narrow deck arms twist more easily than A's wide ones." },
+    { id: "C", name: "Board and pedestals", status: "sketch", pill: "Concept",
+      idea: "A plywood board replaces the printed deck. Short printed pedestals carry the side motors and four threaded rods carry the top.",
+      held: "Side motors bolt to a pedestal and rest on two webs under the body. The bottom motor bolts under the board, the top one to a printed X held by all four rods.",
+      print: "5 parts", buy: "Plywood 210 mm square, 4 M8 rods 200 mm, 16 nuts",
+      load: "Lift the X off the rods. Loosen each pedestal and slide it back in its slots.",
+      watch: "Pedestals are placed by hand, so the four axes must be squared up once." },
+    { id: "D", name: "Bracket board", status: "sketch", pill: "Concept",
+      idea: "Ready-made steel NEMA 17 angle brackets screwed to a plywood board with a hole for the cube.",
+      held: "Side motors bolt to steel brackets and their bodies rest on the bracket foot through a thin printed pad. The top motor bolts to a printed bridge on two rods, the bottom one to a printed hanger under the board.",
+      print: "2 parts and 4 thin pads", buy: "4 steel NEMA 17 brackets, plywood 225 mm square, 4 M8 rods, nuts",
+      load: "Lift the bridge off. The brackets have slotted feet: loosen and slide back.",
+      watch: "Bracket sizes differ between sellers. The 26 mm axis height drawn here is assumed and must be checked on the bracket you buy." },
+    { id: "E", name: "Extrusion cube", status: "sketch", pill: "Concept",
+      idea: "A cube of 2020 aluminium extrusion. Each motor sits on a printed strap that spans two parallel bars, and each side motor also rests on a sill.",
+      held: "Each side strap is bolted to two uprights. A printed sill bolted across the outside of the same two uprights sits under the motor body. Top and bottom straps span two cross bars.",
+      print: "6 straps and 4 sills", buy: "About 1.75 m of 2020 extrusion cut in 12 pieces, 16 corner brackets, T-nuts",
+      load: "Unbolt the top strap. Side straps need slotted holes so each can back off.",
+      watch: "Twelve cuts have to be square and equal in length." },
+    { id: "F", name: "Log cabin", status: "sketch", pill: "Concept",
+      idea: "Four threaded rods between two plywood plates. The side straps stack on the rods like logs and are clamped by nuts.",
+      held: "Each side strap is held at both ends on two rods, and the motor body rests on a printed saddle that stands on the bottom plate. The top and bottom motors bolt straight to the plywood plates.",
+      print: "4 straps and 4 saddles", buy: "4 M8 rods 200 mm, 24 nuts, plywood squares of 225 mm and 160 mm",
+      load: "Four nuts off and lift the top plate. Side straps need slotted lugs to back off.",
+      watch: "Threaded rod is not very straight and the nuts set every height, so squaring it takes patience." },
+    { id: "G", name: "Ring and hoop", status: "sketch", pill: "Concept",
+      idea: "A printed ring around the cube's waist holds the four side motors. A hoop turned 45 degrees passes over the top and under the bottom.",
+      held: "All six motors bolt to closed loops. Each side motor also sits on a leg directly under its body, so the four legs carry the weight straight to the bench.",
+      print: "6 parts: ring, hoop, 4 legs", buy: "Nothing",
+      load: "Poor as drawn. The ring is one piece, so the side tips cannot back out. It would have to be split into two halves that slide apart.",
+      watch: "Each leg is a thin fin, stiff only along its length. The four brace each other through the ring." },
+    { id: "H", name: "Plywood box", status: "sketch", pill: "Concept",
+      idea: "Six laser-cut plywood panels with tabs and slots on a base board. No printed frame parts at all.",
+      held: "Each motor bolts straight to a panel that is held along all four edges. Each side motor body rests on a plywood fin slotted into the base board.",
+      print: "Nothing", buy: "6 mm plywood, about 0.2 square metre, and laser cutter time",
+      load: "Slowest. Top panel off, then four side motors unscrewed and pulled back.",
+      watch: "Needs a laser cutter. Closed panels hide stickers, so the windows would have to grow for a camera." },
+    { id: "I", name: "Three-plane crate", status: "sketch", pill: "Concept, most experimental",
+      idea: "Three plywood plates cross at right angles. Each motor sits in a square socket where two plates meet.",
+      held: "The body is gripped on four sides along its full length. A printed wedge behind and a printed collar in front set its depth.",
+      print: "12 small parts", buy: "6 mm plywood: three plates 248 mm square, laser cut",
+      load: "Pull the wedge from behind a motor and slide the motor back 6 mm. No screws.",
+      watch: "Motors are held by their bodies, not their faces. The third plate must be made in two halves to go together, and the grip depends on the laser's cut width." },
+    { id: "J", name: "Rail sleds", status: "sketch", pill: "Concept",
+      idea: "The bracket board with each steel bracket on a short piece of 2020 extrusion, so every side motor slides on its own rail.",
+      held: "Side motors bolt to steel brackets and their bodies rest on the bracket foot through a thin printed pad. Each bracket sits on an aluminium rail. The top motor bolts to a printed bridge on two rods, the bottom one to a printed plate under the board.",
+      print: "2 parts and 4 thin pads", buy: "4 steel NEMA 17 brackets, 4 pieces of 2020 extrusion 65 mm, 8 T-nuts, plywood 250 mm square, 4 M8 rods",
+      load: "Fastest. Loosen one screw per side motor and slide it back on its rail.",
+      watch: "Same bracket caveat as D. Each rail needs an end stop so the motor returns to the same place." }
+  ];
+
+  var grid = document.getElementById("grid"), tbody = document.getElementById("tbody"), rank = document.getElementById("rank");
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) { e.className = cls; } if (text != null) { e.textContent = text; } return e; }
+  DESIGNS.forEach(function (d) {
+    var card = el("article", "card panel"), stage = el("div", "stage"), body = el("div", "card-body"), head = el("div", "card-head");
+    d.canvas = document.createElement("canvas");
+    d.canvas.setAttribute("role", "img");
+    d.canvas.setAttribute("aria-label", "3D model of " + d.name + ". Drag to turn.");
+    stage.appendChild(d.canvas); d.stage = stage;
+    head.appendChild(el("span", "letter", d.id)); head.appendChild(el("h3", null, d.name));
+    head.appendChild(el("span", "pill " + d.status, d.pill));
+    d.figure = el("p", "figure");
+    var dl = el("dl", "facts");
+    [["Motors", d.held], ["Print", d.print], ["Buy", d.buy], ["Loading", d.load], ["Watch", d.watch]].forEach(function (row) {
+      dl.appendChild(el("dt", null, row[0])); dl.appendChild(el("dd", null, row[1]));
+    });
+    body.appendChild(head); body.appendChild(d.figure); body.appendChild(el("p", null, d.idea)); body.appendChild(dl);
+    card.appendChild(stage); card.appendChild(body); grid.appendChild(card);
+  });
+  function fillNumbers() {
+    var max = 0;
+    DESIGNS.forEach(function (d) { max = Math.max(max, d.volume); });
+    DESIGNS.forEach(function (d) {
+      d.figure.textContent = "";
+      d.figure.appendChild(el("b", null, d.volume === null ? "?" : String(d.volume)));
+      d.figure.appendChild(document.createTextNode(" cm³ of printed plastic"));
+      var tr = el("tr");
+      tr.appendChild(el("td", null, d.id + " · " + d.name));
+      tr.appendChild(el("td", "num", d.volume + " cm³"));
+      tr.appendChild(el("td", null, d.buy)); tr.appendChild(el("td", null, d.load));
+      tbody.appendChild(tr);
+    });
+    DESIGNS.slice().sort(function (a, b) { return a.volume - b.volume; }).forEach(function (d) {
+      var name = el("div", "name"); name.appendChild(el("b", null, d.id));
+      name.appendChild(document.createTextNode(d.name + (d.id === "A" ? " (current)" : "")));
+      var track = el("div", "track"), fill = el("div", "fill" + (d.id === "A" ? " now" : ""));
+      fill.style.width = (100 * d.volume / max) + "%"; track.appendChild(fill);
+      rank.appendChild(name); rank.appendChild(track); rank.appendChild(el("div", "val", d.volume + " cm³"));
+    });
+  }
+  if (!T) {
+    DESIGNS.forEach(function (d) { d.volume = d.fixed || 0; });
+    return;
+  }
+
+  // ------------------------------------------------------------ materials
+  mat = {
+    frame: new T.MeshStandardMaterial({ color: 0xef6a1a, roughness: 0.7 }),
+    motor: new T.MeshStandardMaterial({ color: 0x2b2d31, roughness: 0.55, metalness: 0.2 }),
+    motorMid: new T.MeshStandardMaterial({ color: 0x4a4d53, roughness: 0.45, metalness: 0.4 }),
+    steel: new T.MeshStandardMaterial({ color: 0xb9bec4, roughness: 0.35, metalness: 0.7 }),
+    alu: new T.MeshStandardMaterial({ color: 0xc6cacf, roughness: 0.4, metalness: 0.6 }),
+    adapter: new T.MeshStandardMaterial({ color: 0x8d9299, roughness: 0.7 }),
+    cube: new T.MeshStandardMaterial({ color: 0x111214, roughness: 0.5 }),
+    ply: new T.MeshStandardMaterial({ color: 0xc9b48f, roughness: 0.9 }),
+    ground: new T.MeshBasicMaterial({ color: 0x808080, transparent: true, opacity: 0.13, depthWrite: false })
+  };
+  var tileMats = [0xf2f2f2, 0xf6d21a, 0xc81e22, 0xff7a12, 0x10a04a, 0x1244c0].map(function (c) {
+    return new T.MeshStandardMaterial({ color: c, roughness: 0.45 });
+  });
+
+  // -------------------------------------------------------------- helpers
+  function count(m, mm3) { if (m === mat.frame) { acc += mm3; } }
+  function box(x0, x1, y0, y1, z0, z1, m) {
+    var mesh = new T.Mesh(new T.BoxGeometry(Math.abs(x1 - x0), Math.abs(y1 - y0), Math.abs(z1 - z0)), m);
+    mesh.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+    count(m, Math.abs((x1 - x0) * (y1 - y0) * (z1 - z0)));
+    return mesh;
+  }
+  function bar(len, wid, thk, m) { count(m, len * wid * thk); return new T.Mesh(new T.BoxGeometry(len, wid, thk), m); }
+  function cylZ(r, z0, z1, m, x, y, seg) {
+    var mesh = new T.Mesh(new T.CylinderGeometry(r, r, z1 - z0, seg || 32), m);
+    mesh.rotation.x = Math.PI / 2; mesh.position.set(x || 0, y || 0, (z0 + z1) / 2);
+    count(m, Math.PI * r * r * (z1 - z0));
+    return mesh;
+  }
+  function cylBetween(p1, p2, r, m) {
+    var d = p2.clone().sub(p1), mesh = new T.Mesh(new T.CylinderGeometry(r, r, d.length(), 24), m);
+    mesh.quaternion.setFromUnitVectors(Y, d.clone().normalize());
+    mesh.position.copy(p1).add(p2).multiplyScalar(0.5);
+    return mesh;
+  }
+  function area(shape) {
+    var a = Math.abs(T.ShapeUtils.area(shape.getPoints(12)));
+    (shape.holes || []).forEach(function (h) { a -= Math.abs(T.ShapeUtils.area(h.getPoints(12))); });
+    return a;
+  }
+  function extrude(shape, depth, m) {
+    count(m, area(shape) * depth);
+    return new T.Mesh(new T.ExtrudeGeometry(shape, { depth: depth, bevelEnabled: false, curveSegments: 16 }), m);
+  }
+  function basis(obj, ex, ey, ez) { obj.quaternion.setFromRotationMatrix(new T.Matrix4().makeBasis(ex, ey, ez)); return obj; }
+  function aim(obj, dir) { obj.quaternion.setFromUnitVectors(Z, dir.clone().normalize()); return obj; }
+  function hole(x, y, r) { var p = new T.Path(); p.absarc(x, y, r, 0, Math.PI * 2, true); return p; }
+  function motorHoles(shape, cx, cy) {
+    cx = cx || 0; cy = cy || 0;
+    shape.holes.push(hole(cx, cy, 11.3));
+    [-1, 1].forEach(function (sx) { [-1, 1].forEach(function (sy) { shape.holes.push(hole(cx + sx * 15.5, cy + sy * 15.5, 1.7)); }); });
+    return shape;
+  }
+  function poly(points) {
+    var s = new T.Shape();
+    points.forEach(function (p, i) { if (i) { s.lineTo(p[0], p[1]); } else { s.moveTo(p[0], p[1]); } });
+    s.closePath(); return s;
+  }
+  function rect(hw, hl) { return poly([[-hw, -hl], [hw, -hl], [hw, hl], [-hw, hl]]); }
+  function chamRect(hw, hl, c) {
+    return poly([[-hw + c, -hl], [hw - c, -hl], [hw, -hl + c], [hw, hl - c], [hw - c, hl], [-hw + c, hl], [-hw, hl - c], [-hw, -hl + c]]);
+  }
+  function crossShape(reach, width) {
+    var a = width / 2, r = reach;
+    return poly([[-a, -r], [a, -r], [a, -a], [r, -a], [r, a], [a, a], [a, r], [-a, r], [-a, a], [-r, a], [-r, -a], [-a, -a]]);
+  }
+  function strapShape(L, aw) {
+    // motor pad 46 square in the middle, narrower arms out to +-L along local y
+    return poly([[-aw, -L], [aw, -L], [aw, -23], [23, -23], [23, 23], [aw, 23], [aw, L], [-aw, L], [-aw, 23], [-23, 23], [-23, -23], [-aw, -23]]);
+  }
+  function legShape(halfW, height, arch) {
+    var s = new T.Shape();
+    s.moveTo(-halfW, 0); s.lineTo(-arch, 0); s.absarc(0, 0, arch, Math.PI, 0, true);
+    s.lineTo(halfW, 0); s.lineTo(halfW, height); s.lineTo(-halfW, height); s.closePath();
+    return s;
+  }
+  function plate(shape, t, m, dir, longAxis, centre, r) {
+    // shape's local y runs along longAxis, its normal along dir; inner face r from centre
+    var mesh = extrude(shape, t, m);
+    basis(mesh, longAxis.clone().cross(dir), longAxis, dir);
+    mesh.position.copy(centre).addScaledVector(dir, r);
+    return mesh;
+  }
+  function neg(v) { return v.clone().multiplyScalar(-1); }
+  function quarter(k) { return V(Math.round(Math.cos(k * Math.PI / 2)), Math.round(Math.sin(k * Math.PI / 2)), 0); }
+  function turned(k, fn) { var g = new T.Group(); fn(g); g.rotation.z = k * Math.PI / 2; return g; }
+  function nut(x, y, z) { return cylZ(7, z, z + 6.5, mat.steel, x, y, 6); }
+
+  // ------------------------------------------------------ shared hardware
+  var octH = 21.15, octC = 4.5;
+  function driveUnit() {
+    var g = new T.Group(), h = octH, c = octC;
+    var oct = poly([[-h + c, -h], [h - c, -h], [h, -h + c], [h, h - c], [h - c, h], [-h + c, h], [-h, h - c], [-h, -h + c]]);
+    var capA = extrude(oct, 10, mat.motor); capA.position.z = -10;
+    var mid = extrude(oct, 28, mat.motorMid); mid.position.z = -38; mid.scale.set(0.985, 0.985, 1);
+    var capB = extrude(oct, 10, mat.motor); capB.position.z = -48;
+    g.add(capA, mid, capB, cylZ(11, 0, 2, mat.motor), cylZ(2.5, 0, 24, mat.steel));
+    g.add(cylZ(7, 7.5, 29, mat.adapter), cylZ(9, 29, 32, mat.adapter));
+    return g;
+  }
+  function drive(dir, centre) {
+    var g = new T.Group(), u = driveUnit();
+    u.rotation.x = Math.PI; u.position.z = FACE;
+    g.add(u); aim(g, dir); g.position.copy(centre);
+    return g;
+  }
+  var cubieGeo = new T.BoxGeometry(18.3, 18.3, 18.3), tileGeo = new T.BoxGeometry(15, 15, 0.5);
+  function cube(centre) {
+    var g = new T.Group(), p = 56 / 3, i, j, k;
+    for (i = -1; i <= 1; i++) { for (j = -1; j <= 1; j++) { for (k = -1; k <= 1; k++) {
+      var cubie = new T.Mesh(cubieGeo, mat.cube); cubie.position.set(i * p, j * p, k * p); g.add(cubie);
+    } } }
+    [V(0, 0, 1), V(0, 0, -1), V(1, 0, 0), V(-1, 0, 0), V(0, -1, 0), V(0, 1, 0)].forEach(function (nrm, f) {
+      var face = new T.Group();
+      for (i = -1; i <= 1; i++) { for (j = -1; j <= 1; j++) {
+        var t = new T.Mesh(tileGeo, tileMats[f]); t.position.set(i * p, j * p, 28); face.add(t);
+      } }
+      aim(face, nrm); g.add(face);
+    });
+    g.position.copy(centre);
+    return g;
+  }
+  function allDrives(root, c, skip) {
+    [X, neg(X), Y, neg(Y), Z, neg(Z)].forEach(function (d, i) { if (!skip || skip.indexOf(i) < 0) { root.add(drive(d, c)); } });
+  }
+  function steelBracket(g, zc) {
+    // common steel angle bracket for the +X motor; foot runs under the motor
+    var p = extrude(motorHoles(poly([[-25, -26], [25, -26], [25, 24], [-25, 24]])), 3, mat.steel);
+    basis(p, Y, Z, X); p.position.set(57, 0, zc);
+    g.add(p, box(57, 107, -25, 25, zc - 26, zc - 23, mat.steel), drive(X, V(0, 0, zc)));
+    g.add(box(62, 106, -20, 20, zc - 23, zc - 21.15, mat.frame));   // pad: the body rests on the foot
+  }
+  function bridgeOnRods(root, c, rodXY, zTop) {
+    var d = V(1, 1, 0).normalize();
+    root.add(plate(motorHoles(strapShape(122, 12)), 6, mat.frame, Z, d, c, INNER));
+    [1, -1].forEach(function (s) {
+      root.add(cylZ(4, 0, zTop, mat.steel, s * rodXY, s * rodXY));
+      root.add(nut(s * rodXY, s * rodXY, c.z + INNER - 6.5), nut(s * rodXY, s * rodXY, c.z + FACE));
+    });
+  }
+
+  // -------------------------------------------------------------- designs
+  var build = {};
+  build.A = function () {
+    var root = new T.Group(), zc = 115, c = V(0, 0, zc), k;
+    var deck = extrude(motorHoles(crossShape(100, 80)), 6, mat.frame); deck.position.z = 55; root.add(deck);
+    for (k = 0; k < 4; k++) {
+      root.add(turned(k, function (g) {
+        var leg = basis(extrude(legShape(32, 56, 24), 6, mat.frame), Y, Z, X); leg.position.set(94, 0, 0); g.add(leg);
+        var p = basis(extrude(motorHoles(rect(28, 54)), 6, mat.frame), Y, Z, X); p.position.set(INNER, 0, zc);
+        g.add(p, box(INNER, 96, -38, 38, 61, 67, mat.frame));
+        g.add(box(FACE, 94, 21.45, 25.45, 66.5, zc, mat.frame), box(FACE, 94, -25.45, -21.45, 66.5, zc, mat.frame));
+        g.add(box(FACE, 94, -21.45, 21.45, 66.5, 93.5, mat.frame));
+        [28, -24].forEach(function (y1) {
+          var rib = basis(extrude(poly([[FACE, 67], [94, 67], [FACE, 117]]), 4, mat.frame), X, Z, V(0, -1, 0));
+          rib.position.set(0, y1, 0); g.add(rib);
+        });
+        g.add(drive(X, c));
+      }));
+    }
+    var top = extrude(motorHoles(crossShape(70, 70)), 6, mat.frame); top.position.z = 169;
+    root.add(top, drive(Z, c), drive(neg(Z), c), cube(c));
+    return { root: root, centreZ: 112 };
+  };
+
+  build.B = function () {
+    var root = new T.Group(), zc = 115, c = V(0, 0, zc), k;
+    var deck = extrude(motorHoles(crossShape(100, 44)), 6, mat.frame); deck.position.z = 55; root.add(deck);
+    for (k = 0; k < 4; k++) {
+      root.add(turned(k, function (g) {
+        var leg = basis(extrude(legShape(22, 56, 14), 6, mat.frame), Y, Z, X); leg.position.set(94, 0, 0); g.add(leg);
+        var p = basis(extrude(motorHoles(rect(23, 54)), 6, mat.frame), Y, Z, X); p.position.set(INNER, 0, zc);
+        g.add(p, box(INNER, 96, -23, 23, 61, 67, mat.frame));
+        g.add(box(FACE, 96, 15, 19, 67, 93.5, mat.frame), box(FACE, 96, -19, -15, 67, 93.5, mat.frame));
+        g.add(drive(X, c));
+      }));
+    }
+    var top = extrude(motorHoles(crossShape(70, 44)), 6, mat.frame); top.position.z = 169;
+    root.add(top, drive(Z, c), drive(neg(Z), c), cube(c));
+    return { root: root, centreZ: 112 };
+  };
+
+  build.C = function () {
+    var root = new T.Group(), zc = 115, c = V(0, 0, zc), k, R = 80;
+    var board = extrude(motorHoles(chamRect(105, 105, 20)), 6, mat.ply); board.position.z = 55; root.add(board);
+    for (k = 0; k < 4; k++) {
+      root.add(turned(k, function (g) {
+        var p = basis(extrude(motorHoles(poly([[-23, -54], [23, -54], [23, 25], [-23, 25]])), 6, mat.frame), Y, Z, X);
+        p.position.set(INNER, 0, zc);
+        g.add(p, box(INNER, 100, -23, 23, 61, 67, mat.frame));
+        g.add(box(FACE, 100, 17, 21, 67, 93.5, mat.frame), box(FACE, 100, -21, -17, 67, 93.5, mat.frame));
+        g.add(drive(X, c));
+        // rod and one arm of the top X, on the diagonal
+        g.add(cylZ(4, 0, 190, mat.steel, R, R), nut(R, R, 48.5), nut(R, R, 61), nut(R, R, 162.5), nut(R, R, 175));
+        var arm = bar(95, 22, 6, mat.frame); arm.position.set(75.5 * Math.SQRT1_2, 75.5 * Math.SQRT1_2, 172); arm.rotation.z = Math.PI / 4;
+        g.add(arm);
+      }));
+    }
+    var pad = extrude(motorHoles(rect(23, 23)), 6, mat.frame); pad.position.z = 169;
+    root.add(pad, drive(Z, c), drive(neg(Z), c), cube(c));
+    return { root: root, centreZ: 100 };
+  };
+
+  function boardBase(root, zc, boardTop, half, cham, rodXY) {
+    var c = V(0, 0, zc), s = chamRect(half, half, cham); s.holes.push(hole(0, 0, 42));
+    var board = extrude(s, 6, mat.ply); board.position.z = boardTop - 6; root.add(board);
+    bridgeOnRods(root, c, rodXY, zc + 72);
+    [[1, -1], [-1, 1]].forEach(function (q) {
+      root.add(cylZ(4, 0, boardTop + 8, mat.steel, q[0] * rodXY, q[1] * rodXY), nut(q[0] * rodXY, q[1] * rodXY, boardTop));
+    });
+    [1, -1].forEach(function (q) { root.add(nut(q * rodXY, q * rodXY, boardTop), nut(q * rodXY, q * rodXY, boardTop - 12.5)); });
+    root.add(drive(Z, c), drive(neg(Z), c), cube(c));
+    return c;
+  }
+  build.D = function () {
+    var root = new T.Group(), zc = 115, top = zc - 26, k;
+    boardBase(root, zc, top, 112, 20, 78);
+    for (k = 0; k < 4; k++) { root.add(turned(k, function (g) { steelBracket(g, zc); })); }
+    // hanger: plate under the bottom motor's face, two blocks up to the board
+    var h = extrude(motorHoles(rect(23, 58)), 6, mat.frame); h.rotation.z = Math.PI / 2; h.position.z = zc - FACE;
+    root.add(h, box(44, 58, -23, 23, zc - INNER, top - 6, mat.frame), box(-58, -44, -23, 23, zc - INNER, top - 6, mat.frame));
+    return { root: root, centreZ: 100 };
+  };
+  build.J = function () {
+    var root = new T.Group(), zc = 115, railTop = zc - 26, top = railTop - 20, k;
+    boardBase(root, zc, top, 125, 30, 80);
+    for (k = 0; k < 4; k++) {
+      root.add(turned(k, function (g) { g.add(box(55, 120, -10, 10, top, railTop, mat.alu)); steelBracket(g, zc); }));
+    }
+    var pad = extrude(motorHoles(rect(23, 52)), 8, mat.frame); pad.rotation.z = Math.PI / 2; pad.position.z = zc - FACE;
+    root.add(pad);
+    return { root: root, centreZ: 100 };
+  };
+
+  build.E = function () {
+    var root = new T.Group(), zc = 115, c = V(0, 0, zc), R = 70;
+    [-1, 1].forEach(function (a) { [-1, 1].forEach(function (b) {
+      root.add(box(a * R - 10, a * R + 10, b * R - 10, b * R + 10, 0, zc + 80, mat.alu));          // uprights
+      root.add(box(-60, 60, a * R - 10, a * R + 10, zc + b * R - 10, zc + b * R + 10, mat.alu));   // along x
+      root.add(box(a * R - 10, a * R + 10, -60, 60, zc + b * R - 10, zc + b * R + 10, mat.alu));   // along y
+    }); });
+    [X, Y].forEach(function (d, i) { [1, -1].forEach(function (s) {
+      var dir = d.clone().multiplyScalar(s), g = new T.Group(), z0 = i ? zc - 23 : zc, z1 = i ? zc : zc + 23;
+      root.add(plate(motorHoles(rect(23, 23)), 6, mat.frame, dir, i ? X : Y, c, INNER));
+      g.add(box(INNER, FACE, 23, 80, z0, z1, mat.frame), box(INNER, FACE, -80, -23, z0, z1, mat.frame));   // arms to the uprights
+      g.add(box(80, 86, -80, 80, zc - 37, zc - 21.15, mat.frame));                                      // sill under the motor body
+      g.rotation.z = Math.atan2(dir.y, dir.x); root.add(g);
+    }); });
+    [1, -1].forEach(function (s) {
+      root.add(plate(motorHoles(strapShape(80, 14)), 6, mat.frame, Z.clone().multiplyScalar(s), X, c, INNER));
+    });
+    allDrives(root, c); root.add(cube(c));
+    return { root: root, centreZ: 100 };
+  };
+
+  build.F = function () {
+    var root = new T.Group(), zc = 115, c = V(0, 0, zc), R = 68, k;
+    [zc - FACE, zc + INNER].forEach(function (z) {
+      var half = z < zc ? 112 : 80, p = extrude(motorHoles(chamRect(half, half, 20)), 6, mat.ply); p.position.z = z; root.add(p);
+    });
+    for (k = 0; k < 4; k++) {
+      root.add(turned(k, function (g) {                                   // saddle standing on the bottom plate
+        g.add(box(84, 104, 17, 21, 61, zc - 21.15, mat.frame), box(84, 104, -21, -17, 61, zc - 21.15, mat.frame));
+        g.add(box(84, 104, -17, 17, 61, 65, mat.frame));
+      }));
+    }
+    [-1, 1].forEach(function (a) { [-1, 1].forEach(function (b) {
+      root.add(cylZ(4, 0, 190, mat.steel, a * R, b * R));
+      [48.5, 61, zc - 29.5, zc + 23, 162.5, 175].forEach(function (z) { root.add(nut(a * R, b * R, z)); });
+      root.add(box(a * 54, a * 78, b * 54, b * 78, zc, zc + 23, mat.frame));       // lug of an X strap
+      root.add(box(a * 54, a * 78, b * 54, b * 78, zc - 23, zc, mat.frame));       // lug of a Y strap
+    }); });
+    [X, Y].forEach(function (d) { [1, -1].forEach(function (s) {
+      root.add(plate(motorHoles(rect(23, 54)), 6, mat.frame, d.clone().multiplyScalar(s), d === X ? Y : X, c, INNER));
+    }); });
+    allDrives(root, c); root.add(cube(c));
+    return { root: root, centreZ: 100 };
+  };
+
+  build.G = function () {
+    var root = new T.Group(), zc = 115, c = V(0, 0, zc), k;
+    for (k = 0; k < 4; k++) {
+      root.add(turned(k, function (g) {
+        g.add(plate(motorHoles(rect(23, 34)), 6, mat.frame, X, Y, c, INNER));
+        var facet = bar(38, 6, 46, mat.frame); facet.position.set(45.5, 45.5, zc); facet.rotation.z = -Math.PI / 4; g.add(facet);
+        g.add(drive(X, c));
+      }));
+    }
+    var hoop = new T.Group(); hoop.position.copy(c); hoop.rotation.z = Math.PI / 4; root.add(hoop);
+    [1, -1].forEach(function (sx) {
+      hoop.add(box(sx * 67.3, sx * 72.3, -18, 18, -23, 23, mat.frame));
+      [1, -1].forEach(function (sz) {
+        var dx = sx * (23 - 69.8), dz = sz * (57 - 23), seg = bar(Math.hypot(dx, dz) + 4, 36, 5, mat.frame);
+        seg.position.set(sx * 46.4, 0, sz * 40); seg.rotation.y = -Math.atan2(dz, dx); hoop.add(seg);
+      });
+    });
+    [INNER, -FACE].forEach(function (z) { var pad = extrude(motorHoles(rect(23, 23)), 6, mat.frame); pad.position.z = z; hoop.add(pad); });
+    hoop.add(drive(Z, V(0, 0, 0)), drive(neg(Z), V(0, 0, 0)));
+    for (k = 0; k < 4; k++) {
+      root.add(turned(k, function (g) {                                   // leg under the motor body, from bench to motor
+        g.add(box(FACE, 104, -3, 3, 0, zc - 21.15, mat.frame));
+        g.add(box(64, 104, -15, 15, zc - 25.15, zc - 21.15, mat.frame), box(FACE, 104, -15, 15, 0, 4, mat.frame));
+      }));
+    }
+    root.add(cube(c));
+    return { root: root, centreZ: 112 };
+  };
+
+  build.H = function () {
+    var root = new T.Group(), zc = 115, c = V(0, 0, zc);
+    [1, -1].forEach(function (s) {
+      var sh = legShape(66, zc + 66, 40);
+      motorHoles(sh, 0, zc);
+      [-1, 1].forEach(function (a) { [-1, 1].forEach(function (b) { sh.holes.push(hole(a * 42, zc + b * 42, 15)); }); });
+      var p = basis(extrude(sh, 6, mat.ply), Y, Z, X); p.position.set(s > 0 ? INNER : -FACE, 0, 0); root.add(p);
+      root.add(plate(motorHoles(chamRect(54, 66, 24)), 6, mat.ply, Y.clone().multiplyScalar(s), Z, c, INNER));
+      root.add(plate(motorHoles(chamRect(54, 54, 24)), 6, mat.ply, Z.clone().multiplyScalar(s), X, c, INNER));
+    });
+    root.add(extrude(chamRect(125, 125, 30), 6, mat.ply));
+    for (var k = 0; k < 4; k++) {
+      root.add(turned(k, function (g) { g.add(box(62, 104, -3, 3, 6, zc - 21.15, mat.ply)); }));   // fin under the motor body
+    }
+    allDrives(root, c); root.add(cube(c));
+    return { root: root, centreZ: 105 };
+  };
+
+  build.I = function () {
+    var root = new T.Group(), zc = 124, c = V(0, 0, zc), a = 21.4, r = 114, w = 46, o = 124;
+    function plateShape() {
+      var s = rect(o, o);
+      s.holes.push(poly([[-a, -r], [a, -r], [a, -w], [w, -w], [w, -a], [r, -a], [r, a], [w, a], [w, w], [a, w], [a, r], [-a, r],
+        [-a, w], [-w, w], [-w, a], [-r, a], [-r, -a], [-w, -a], [-w, -w], [-a, -w]]));
+      return s;
+    }
+    var pz = extrude(plateShape(), 6, mat.ply); pz.position.z = zc - 3; root.add(pz);
+    var py = basis(extrude(plateShape(), 6, mat.ply), X, Z, V(0, -1, 0)); py.position.set(0, 3, zc); root.add(py);
+    var px = basis(extrude(plateShape(), 6, mat.ply), Y, Z, X); px.position.set(-3, 0, zc); root.add(px);
+    [X, neg(X), Y, neg(Y), Z, neg(Z)].forEach(function (d) {
+      var g = new T.Group();
+      g.add(box(-15, 15, -15, 15, 108, 114, mat.frame));                             // wedge behind the motor
+      var collar = extrude(motorHoles(rect(21, 21)), 4, mat.frame); collar.position.z = 56; g.add(collar);
+      aim(g, d); g.position.copy(c); root.add(g);
+    });
+    allDrives(root, c); root.add(cube(c));
+    return { root: root, centreZ: 124 };
+  };
+
+  // ---------------------------------------------------------------- scene
+  var renderer;
+  try { renderer = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); }
+  catch (e) { renderer = null; }
+  var scene = new T.Scene();
+  scene.add(new T.HemisphereLight(0xffffff, 0x7c828a, 0.95));
+  var sun = new T.DirectionalLight(0xffffff, 0.75); sun.position.set(200, -320, 420); scene.add(sun);
+  var fill = new T.DirectionalLight(0xffffff, 0.25); fill.position.set(-300, 250, 120); scene.add(fill);
+  var ground = new T.Mesh(new T.CircleGeometry(185, 64), mat.ground); ground.position.z = -0.5; scene.add(ground);
+  var camera = new T.PerspectiveCamera(30, 4 / 3, 10, 4000); camera.up.set(0, 0, 1);
+
+  DESIGNS.forEach(function (d) {
+    acc = 0;
+    var b = build[d.id]();
+    d.root = b.root; d.centreZ = b.centreZ; d.root.visible = false; scene.add(d.root);
+    d.volume = d.fixed || Math.round(acc / 1000 / 5) * 5;
+    d.dirty = true; d.onScreen = true;
+  });
+  fillNumbers();
+
+  if (!renderer) {
+    DESIGNS.forEach(function (d) {
+      var msg = el("p", "note", "This browser could not start 3D drawing, so the model is not shown.");
+      msg.style.padding = "16px"; d.stage.replaceChild(msg, d.canvas);
+    });
+    return;
+  }
+  renderer.outputEncoding = T.sRGBEncoding;
+  var state = { az: -58 * Math.PI / 180, el: 22 * Math.PI / 180 }, DIST = 660;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function markAll() { DESIGNS.forEach(function (d) { d.dirty = true; }); }
+
+  function attachDrag(cv) {
+    var last = null;
+    cv.addEventListener("pointerdown", function (e) { last = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener("pointermove", function (e) {
+      if (!last) { return; }
+      state.az -= (e.clientX - last.x) * 0.008;
+      if (e.pointerType === "mouse") { state.el = Math.max(-0.35, Math.min(1.35, state.el + (e.clientY - last.y) * 0.006)); }
+      last = { x: e.clientX, y: e.clientY };
+      var deg = state.az * 180 / Math.PI; deg = ((deg + 180) % 360 + 360) % 360 - 180;
+      slider.value = Math.round(deg); markAll();
+    });
+    function end() { last = null; }
+    cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+  }
+  var slider = document.getElementById("turn");
+  slider.addEventListener("input", function () { state.az = Number(slider.value) * Math.PI / 180; markAll(); });
+  var key = document.getElementById("key-print");
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="colour"]'), function (input) {
+    function apply() { if (input.checked) { mat.frame.color.set(input.value); key.style.background = input.value; markAll(); } }
+    input.addEventListener("change", apply); apply();
+  });
+  var io = window.IntersectionObserver ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      DESIGNS.forEach(function (d) { if (d.stage === en.target) { d.onScreen = en.isIntersecting; if (en.isIntersecting) { d.dirty = true; } } });
+    });
+  }, { rootMargin: "200px" }) : null;
+  DESIGNS.forEach(function (d) {
+    attachDrag(d.canvas);
+    if (io) { io.observe(d.stage); }
+    if (window.ResizeObserver) { new ResizeObserver(function () { d.dirty = true; }).observe(d.stage); }
+  });
+
+  function draw(d) {
+    var w = Math.round(d.stage.clientWidth * dpr), h = Math.round(d.stage.clientHeight * dpr);
+    if (!w || !h) { return; }
+    if (d.canvas.width !== w || d.canvas.height !== h) { d.canvas.width = w; d.canvas.height = h; }
+    var size = renderer.getSize(new T.Vector2());
+    if (size.x !== w || size.y !== h) { renderer.setSize(w, h, false); }
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    var ce = Math.cos(state.el), target = V(0, 0, d.centreZ);
+    camera.position.set(ce * Math.cos(state.az), ce * Math.sin(state.az), Math.sin(state.el)).multiplyScalar(DIST).add(target);
+    camera.lookAt(target);
+    d.root.visible = true; renderer.render(scene, camera); d.root.visible = false;
+    var ctx = d.canvas.getContext("2d");
+    ctx.clearRect(0, 0, w, h); ctx.drawImage(renderer.domElement, 0, 0);
+  }
+  function frame() {
+    DESIGNS.forEach(function (d) { if (d.dirty && d.onScreen) { d.dirty = false; draw(d); } });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>

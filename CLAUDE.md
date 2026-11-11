@@ -35,12 +35,22 @@ replaced on 2026-11-10; nothing from it should be reintroduced.
   `bench_stand.py` and runs interference checks every time.
 - `cad/adapter_set.py`: the adapter nine times, tip widths 13.5 to 15.5 mm,
   each engraved with its width, for finding `TIP_SQ` by trial fit.
+- `cad/inventor_export.py`: the whole robot (frame, six motors, adapters, cube)
+  as one STEP assembly for Autodesk Inventor, in `cad/step/`. It reuses the
+  geometry in `frame.py` and `bench_stand.py` through `cad/step_kernel.py`,
+  which stands in for manifold3d with CadQuery's exact solid kernel. The motor
+  and cube in it are reference models. Change geometry in the Python scripts,
+  not in Inventor, then export again.
 - `cad/stl/`: generated STL files, in print orientation.
 - `hardware/README.md`: assembly, wiring, cube preparation, bench test.
 - `docs/BOM.md`: the bill of materials. Keep it in step with any parts change.
-- `docs/build-plan.html`, `docs/parts-viewer.html`: copies of two published
-  Claude artifact pages (research, 3D viewer). They are page fragments without
-  a doctype; they open fine in a browser.
+- `docs/build-plan.html`, `docs/parts-viewer.html`, `docs/enclosure-options.html`:
+  copies of published Claude artifact pages (research, 3D viewer, ten frame
+  concepts A to J ranked by printed plastic). They are page fragments without
+  a doctype; they open fine in a browser. In the enclosure page only option A
+  (the current frame) is modeled and checked; B to J are concept models. The
+  user requires that no motor "floats": every side motor must have a support
+  under its body that runs to the base, not only its four face screws.
 
 ## Commands
 
@@ -51,6 +61,8 @@ pip install manifold3d trimesh numpy matplotlib
 cd cad
 python bench_stand.py --no-preview   # skip the slow matplotlib renders
 python frame.py                      # prints OK/HIT for each collision check
+pip install cadquery
+python inventor_export.py            # writes step/cube_solver_assembly.step
 
 python3 software/solver.py --demo    # needs software/requirements.txt installed
 ```
@@ -74,7 +86,8 @@ After a geometry change, run `frame.py` and confirm every check prints `OK`.
 
 ## CAD conventions
 
-- Units are millimetres. Z is up.
+- Units are millimetres. Z is up. The STEP assembly alone is turned so Y is up,
+  because Inventor treats Y as up: script (x, y, z) is Inventor (x, z, -y).
 - Bench stand: X runs along the motor shaft; the plate's cube-side face is x = 0.
 - Frame: cube centre is on the Z axis at `ZC` = 115.
 - Every motor mounting face is 32 mm from its cube face (`GAP` 26 + `PLATE_T` 6),
