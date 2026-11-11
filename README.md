@@ -4,6 +4,13 @@ A six-motor robot that solves a 3x3 Rubik's cube, aiming for about 1 to 1.5
 seconds. Each face's centre piece is coupled directly to a stepper motor, so
 any face can be turned without regripping the cube.
 
+<p align="center">
+  <img src="docs/img/robot-assembled.png" alt="CAD render of the robot: an orange printed frame holding six stepper motors around a Rubik's cube" width="520">
+</p>
+
+The pictures on this page are renders of the CAD model. Nothing has been
+printed or assembled yet.
+
 ```
  webcam ──► software/ (Python) ──USB serial──► firmware/ (Teensy 4.1) ──► 6 × TMC5160 ──► 6 × NEMA 17
             scan colours                        parse moves
@@ -46,6 +53,9 @@ Full parts list with prices: `docs/BOM.md`. Wiring and assembly:
 | `docs/BOM.md` | Bill of materials with prices |
 | `docs/build-plan.html` | Research and feasibility calculation |
 | `docs/parts-viewer.html` | 3D view of the printed parts |
+| `docs/enclosure-options.html` | Ten frame layouts compared by printed plastic |
+| `docs/img/` | CAD renders used in this README |
+| `cad/step/` | The whole robot as a STEP assembly, for Autodesk Inventor |
 | `CLAUDE.md` | Project context: decisions, conventions, open work |
 
 ## Quick start: solver
@@ -106,7 +116,28 @@ pip install manifold3d trimesh numpy matplotlib
 cd cad
 python bench_stand.py --no-preview   # one-motor test stand and shaft adapter
 python frame.py                      # six-motor frame, with collision checks
+
+pip install cadquery
+python inventor_export.py            # whole robot as a STEP assembly for Inventor
 ```
+
+The frame is six printed parts: a base, four identical towers and a top plate
+that lifts off to load the cube. One shaft adapter design fits all six motors.
+
+<p align="center">
+  <img src="docs/img/robot-exploded.png" alt="Exploded CAD render: the top plate and its motor lifted, the four towers and their motors pulled outward, the cube raised off the bottom adapter" width="520">
+</p>
+
+The printed parts as they lie on the print bed (base, top plate, tower, shaft
+adapter):
+
+<p align="center">
+  <img src="docs/img/printed-parts.png" alt="The four printed part types laid out in print orientation" width="640">
+</p>
+
+About 400 to 520 g of PLA for the whole frame at 20 to 40% infill, estimated
+from the STL files. Other frame layouts that were considered are compared in
+`docs/enclosure-options.html`.
 
 ## Face / motor mapping
 
