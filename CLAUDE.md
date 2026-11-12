@@ -81,6 +81,8 @@ After a geometry change, run `frame.py` and confirm every check prints `OK`.
   B 20/21/22. SPI on 11/12/13. Shared enable on 23, active low.
 - No Arduino `String` and no forward-declared functions, so the host test can
   include the `.ino` file as plain C++. Keep it that way.
+- Keep `struct Axis` above the first function in the sketch. The Arduino build
+  inserts function prototypes there, and they fail without the type.
 - The host test simulates time and drivers. It cannot show that the sketch
   compiles for the Teensy or that real motors keep up.
 
@@ -104,8 +106,11 @@ After a geometry change, run `frame.py` and confirm every check prints `OK`.
   recess under the cube's centre cap is not published and must be measured.
 - Speed figures (40 to 45 ms per quarter turn at 24 V) are calculations, not
   measurements. No published cube robot uses this exact motor.
-- The firmware passes the host test only. It has not been compiled for the
-  Teensy or run on hardware. The TMC5160 register values follow the datasheet's
+- The firmware passes the host test and compiles for the Teensy 4.1
+  (`arduino-cli compile --fqbn teensy:avr:teensy41 firmware/cube_solver`,
+  Teensy core 1.62.0). On 2026-11-11 it was flashed to the Teensy (serial
+  port COM3) with no drivers attached: `PING`, `STATUS`, the range checks and
+  the no-driver refusal all replied correctly. No driver or motor has run. The TMC5160 register values follow the datasheet's
   example configuration and are untested on a real driver.
 - Nothing has been printed, wired or run yet.
 

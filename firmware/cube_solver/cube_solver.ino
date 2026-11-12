@@ -73,6 +73,19 @@ bool driverOk[NUM_FACES] = {false, false, false, false, false, false};
 char lineBuf[401];
 uint16_t lineLen = 0;
 
+// One face's move in progress. This must stay above the first function: the
+// Arduino build inserts function prototypes there, and they need the type.
+struct Axis {
+  uint8_t face;
+  uint32_t total;   // steps in this move
+  uint32_t done;
+  float nAcc;       // steps spent accelerating
+  float tAcc;       // seconds spent accelerating
+  float vPeak;      // steps/s at the top of the profile
+  float tTotal;     // seconds for the whole move
+  uint32_t nextUs;  // time of the next step, microseconds from the start
+};
+
 // ------------------------------------------------------------- TMC5160 SPI
 SPISettings tmcSpi(1000000, MSBFIRST, SPI_MODE3);
 
@@ -162,17 +175,6 @@ void printStatus() {
 }
 
 // ----------------------------------------------------------------- motion
-struct Axis {
-  uint8_t face;
-  uint32_t total;   // steps in this move
-  uint32_t done;
-  float nAcc;       // steps spent accelerating
-  float tAcc;       // seconds spent accelerating
-  float vPeak;      // steps/s at the top of the profile
-  float tTotal;     // seconds for the whole move
-  uint32_t nextUs;  // time of the next step, microseconds from the start
-};
-
 void updateAccel() {
   // A quarter turn that accelerates for half its steps and brakes for the rest.
   float t = quarterTurnMs / 1000.0f;
