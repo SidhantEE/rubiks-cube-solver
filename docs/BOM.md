@@ -64,8 +64,10 @@ Not included: the 24 V power supply and jumper wires, which are already owned. I
 | Use | Size | Qty |
 |---|---|---|
 | Motors to the frame (and to the bench stand) | M3 × 10 mm | 24 |
-| Towers to the deck, with nuts | M3 × 12 mm | 8 |
-| Top plate to the towers | M3 × 16 mm | 8 |
+| Towers to the base, with nuts | M3 × 10 mm | 8 |
+| Pedestal to the base, from underneath | M3 × 10 mm | 4 |
+| Bridge to the two tall towers | M3 × 16 mm | 4 |
+| Clamp screws onto the motor bodies (4 side motors and the top motor) | M3 × 8 mm | 10 |
 | Shaft adapters onto the motor shafts | M3 × 6 mm | 6 |
 
 The motor's mounting holes are 4.5 mm deep, so a screw through a 6 mm plate
@@ -89,9 +91,11 @@ All from `cad/`. Sizes are as printed.
 | File | Qty | Size | Notes |
 |---|---|---|---|
 | `bench_stand.stl` | 1 | 158 × 90 × 74 mm | For the one-motor test |
-| `frame_base.stl` | 1 | 200 × 200 × 61 mm | Print upside down |
-| `frame_tower.stl` | 4 | 42 × 76 × 108 mm | Print standing on its foot |
-| `frame_top.stl` | 1 | 140 × 140 × 10 mm | Print upside down |
+| `frame_base.stl` | 1 | 208 × 208 × 6 mm | Print as it sits |
+| `frame_pedestal.stl` | 1 | 56 × 56 × 55 mm | Print upside down |
+| `frame_tower.stl` | 2 | 58.5 × 76 × 132 mm | Print standing on its foot |
+| `frame_tower_tall.stl` | 2 | 58.5 × 76 × 163 mm | Print standing on its foot |
+| `frame_top.stl` | 1 | 136 × 53 × 29.5 mm | Bridge; print as it sits, collar up |
 | `drive_adapter_PLACEHOLDER_15mm_tip.stl` | 6 | 18 × 18 × 28.5 mm | Tip size is a placeholder; measure the cube first |
 
 None need supports. All fit the UTA FabLab's Prusa i3 MK3 (250 × 210 × 210 mm).

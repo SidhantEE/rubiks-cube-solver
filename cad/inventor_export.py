@@ -136,13 +136,17 @@ def drive_locations():
 def main():
     OUT.mkdir(exist_ok=True)
     base = fr.build_base().solid()
+    pedestal = fr.build_pedestal().solid()
     tower = fr.build_tower().solid()
+    tower_tall = fr.build_tower(tall=True).solid()
     top = fr.build_top().solid()
     adapter = bs.build_adapter().solid()
     motor = build_motor()
     cube_body, tile_sets = build_cube()
 
-    for name, shape in (("frame_base", base), ("frame_tower", tower), ("frame_top", top),
+    for name, shape in (("frame_base", base), ("frame_pedestal", pedestal),
+                        ("frame_tower", tower), ("frame_tower_tall", tower_tall),
+                        ("frame_top", top),
                         ("drive_adapter", adapter), ("motor", motor), ("cube_body", cube_body)):
         print(f"{name}: solids={len(shape.Solids())} valid={shape.isValid()} "
               f"volume={shape.Volume() / 1000:.1f} cm3")
@@ -156,9 +160,11 @@ def main():
     def placed(shape, loc):
         return Manifold(shape.moved(loc))
 
-    frame_all = Manifold(base) + Manifold(top)
-    for k in range(4):
-        frame_all += Manifold(tower).rotate([0, 0, 90 * k])
+    # tall towers on R and L carry the bridge; B and F are the short ones
+    tower_for = {"R": tower_tall, "B": tower, "L": tower_tall, "F": tower}
+    frame_all = Manifold(base) + Manifold(pedestal) + Manifold(top)
+    for k, face in enumerate(("R", "B", "L", "F")):
+        frame_all += Manifold(tower_for[face]).rotate([0, 0, 90 * k])
     cube_all = placed(cube_body, centre)
     motors_all, adapters_all = Manifold(), Manifold()
     for loc in drives.values():
@@ -184,8 +190,9 @@ def main():
     up = cq.Location(cq.Vector(0, 0, 0), cq.Vector(1, 0, 0), -90)
     assy = cq.Assembly(name="cube_solver")
     assy.add(base, name="frame_base", color=colour(blue), loc=up)
+    assy.add(pedestal, name="frame_pedestal", color=colour(blue), loc=up)
     for k, face in enumerate(("R", "B", "L", "F")):
-        assy.add(tower, name=f"frame_tower_{face}", color=colour(blue),
+        assy.add(tower_for[face], name=f"frame_tower_{face}", color=colour(blue),
                  loc=up * cq.Location(cq.Vector(0, 0, 0), cq.Vector(0, 0, 1), 90 * k))
     assy.add(top, name="frame_top", color=colour(blue), loc=up)
     for face, loc in drives.items():

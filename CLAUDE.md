@@ -31,8 +31,23 @@ replaced on 2026-11-10; nothing from it should be reintroduced.
   which includes the real sketch and runs it against simulated drivers.
 - `cad/bench_stand.py`: one-motor bench test stand and the shaft adapter.
   Also holds the shared parameters and helper functions.
-- `cad/frame.py`: six-motor frame (base, tower x4, lift-off top). Imports from
-  `bench_stand.py` and runs interference checks every time.
+- `cad/frame.py`: six-motor frame, redesigned on 2026-11-11 at the user's
+  request to follow the Flatland and Rose record robot
+  (github.com/jayflatland/HighFrequencyTwister, GPL-3.0; its frame is
+  `CAD Drawings/Phase 4 Center Drive Redux/Five Motor Frame.stl` and
+  `Sixth Motor Frame.stl`). Only the layout is followed; do not copy their
+  files in. The user's rules for the frame: every motor held very securely
+  with walls around it and visible screw fixings, sturdy before light (saving
+  filament is welcome but not the priority), and something must detach so
+  the cube can be loaded again and again. The user rejected open X-braced
+  "cage" supports, a GAN-Robot-style tray with slim pillars, and a five-motor
+  layout. Parts: flat base, pedestal around the bottom motor, two short and
+  two tall box-column towers with a four-walled motor cradle on top, and a
+  bridge with a collar for the top motor. `--preview` writes
+  `cad/preview/frame_*.png`. Imports from `bench_stand.py` and runs
+  interference checks every time. The README renders,
+  `docs/parts-viewer.html` and option A in the enclosure page still show the
+  frame from before that change.
 - `cad/adapter_set.py`: the adapter nine times, tip widths 13.5 to 15.5 mm,
   each engraved with its width, for finding `TIP_SQ` by trial fit.
 - `cad/inventor_export.py`: the whole robot (frame, six motors, adapters, cube)

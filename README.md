@@ -121,8 +121,10 @@ pip install cadquery
 python inventor_export.py            # whole robot as a STEP assembly for Inventor
 ```
 
-The frame is six printed parts: a base, four identical towers and a top plate
-that lifts off to load the cube. One shaft adapter design fits all six motors.
+The frame is a flat base, a pedestal for the bottom motor, four box columns
+for the side motors and a bridge for the top motor that lifts off to load the
+cube. Every motor sits inside walls. The layout follows the Flatland and Rose
+record robot of 2016.
 
 <p align="center">
   <img src="docs/img/robot-exploded.png" alt="Exploded CAD render: the top plate and its motor lifted, the four towers and their motors pulled outward, the cube raised off the bottom adapter" width="520">
@@ -135,8 +137,10 @@ adapter):
   <img src="docs/img/printed-parts.png" alt="The four printed part types laid out in print orientation" width="640">
 </p>
 
-About 400 to 520 g of PLA for the whole frame at 20 to 40% infill, estimated
-from the STL files. Other frame layouts that were considered are compared in
+The frame was redesigned on 2026-11-11 as box columns with motor cradles:
+665 cm³ of solid plastic, about the same as the 671 cm³ before (the renders
+above still show the earlier frame). The earlier frame was estimated at 400
+to 520 g of PLA; the new one has not been sliced. Other frame layouts that were considered are compared in
 `docs/enclosure-options.html`.
 
 ## Face / motor mapping
