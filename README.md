@@ -157,27 +157,50 @@ to 520 g of PLA; the new one has not been sliced. Other frame layouts that were 
 Teensy pin numbers. SPI is shared on pins 11 (MOSI), 12 (MISO) and 13 (SCK).
 All six drivers share ENABLE on pin 23 (active LOW).
 
-## Status
+## Roadmap
+
+Last updated 2026-11-14. Done: 8 of 19.
+
+**Done**
 
 - [x] Solver pipeline (`software/`)
 - [x] Research and bill of materials
 - [x] Order parts
 - [x] Design the bench stand and six-motor frame (`cad/`)
 - [x] Firmware for Teensy 4.1 and TMC5160, including opposite faces together
-- [ ] Compile and flash the firmware on a real Teensy
-- [ ] Measure the cube's centre recess and regenerate the shaft adapter
-- [ ] Print the bench stand and run the one-motor test
-- [ ] Print and assemble the frame
-- [ ] Calibrate colour thresholds for your lighting
-- [ ] Scan the cube inside the robot instead of by hand
+- [x] Compile the firmware and flash it to the Teensy (no driver attached yet)
+- [x] Estimate the cube's centre recess from photos and size the adapter to it
+- [x] Design a two-piece base for printers with a 180 mm bed
+
+**Next, in order**
+
+- [ ] Choose and buy the 3D printer (a 180 mm bed needs the two-piece base)
+- [ ] Print the adapter trial set and find the tip that fits the cube
+- [ ] Wire one driver to the Teensy and get a `STATUS` reply
+- [ ] Test spin: one motor on the bench stand, no cube
+- [ ] Test spin with the cube: hold 40 to 45 ms per quarter turn
+- [ ] Print five more adapters and the frame, and assemble it
+- [ ] Wire all six motors; design a driver tray and cable clips
+- [ ] First full solve, scanning the cube by hand
+- [ ] Scan the cube inside the robot with two webcams
+- [ ] Faster solving with a solver that turns opposite faces together
+- [ ] A faster way to load the cube
+
+3D pages for the current design (open the files in a browser):
+`docs/adapter-fit.html`, `docs/adapter-set.html`, `docs/split-base.html`,
+`docs/cable-routes.html`.
 
 What is and is not verified:
 
-- Nothing has been printed, wired or run on real hardware yet.
-- The firmware has only been run in the host test. It has not been compiled
-  for the Teensy.
+- Nothing has been printed, wired to a driver or run with a motor yet.
+- The firmware passes the host test and compiles for the Teensy 4.1. It was
+  flashed with no drivers attached and answered `PING` and `STATUS`
+  correctly. No driver or motor has run.
 - Motor and cube dimensions come from the motor datasheet and the cube's
   product listing, not from measuring the real parts.
-- The shaft adapter's tip is a placeholder until the cube is measured.
+- The shaft adapter's tip is estimated from photos, good to about 1 mm. The
+  trial set in `cad/stl/drive_adapter_set.stl` is what confirms the fit.
+- The two-piece base passes the collision checks in `cad/frame.py` but has
+  not been printed.
 - The speed target is a calculation: 40 to 45 ms per quarter turn at 24 V.
   The bench test in `hardware/README.md` is what confirms it.

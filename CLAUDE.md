@@ -163,6 +163,10 @@ After a geometry change, run `frame.py` and confirm every check prints `OK`.
 ## Open work, in order
 
 Roadmap as of 2026-11-14. Each step depends on the one before unless noted.
+The user follows progress in the "Roadmap" section of `README.md` and asked
+(2026-11-14) for it to be kept current: whenever a step is finished or the
+plan changes, tick or edit it there, update its date and done count, and keep
+this list in step with it.
 
 1. Choose and buy the printer. Bambu Lab A1 mini (180 mm bed) needs the
    two-piece base (`frame_base_half.stl` x2); the A1 or anything with a bed
