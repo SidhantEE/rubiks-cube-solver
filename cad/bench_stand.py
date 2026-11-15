@@ -37,11 +37,17 @@ SHAFT_FLAT = 4.5     # distance from flat to the opposite side of the shaft
 SHAFT_LEN = 24.0     # shaft length from motor face
 SHAFT_DCUT = 15.0    # length of the flat, measured from the shaft tip
 
-# Drive adapter tip. PLACEHOLDER VALUES: measure the square recess under the
-# cube's centre cap with calipers before printing the adapter.
-TIP_SQ = 15.0        # width of the square recess
-TIP_DEPTH = 4.0      # how far the tip reaches into the recess
-TIP_SCREW_D = 7.5    # clearance for the tension screw head in the recess
+# Drive adapter tip. ESTIMATES FROM PHOTOS (2026-11-14), scaled against the
+# 56 mm cube width, good to about +/- 1 mm. Not caliper measurements: confirm
+# the width with adapter_set.py before printing six.
+# Seen in the photos: recess about 17 mm wide at the rim with corners of about
+# 2.5 mm radius, about 8 mm deep, low ribs on the floor, and a round boss
+# around the tension screw about 9.5 mm across whose top is about 2 mm below
+# the rim.
+TIP_SQ = 16.75       # width of the tip (recess is about 17 mm)
+TIP_CORNER_R = 4.0   # tip corner radius, larger than the recess corners even if they are 3.5
+TIP_DEPTH = 5.0      # how far the tip reaches into the recess (stays off the floor ribs)
+TIP_SCREW_D = 11.5   # clearance for the boss, generous: printed holes come out small
 
 SEG = 96
 OUT = pathlib.Path(__file__).parent
@@ -172,7 +178,7 @@ def build_adapter(tip_sq=TIP_SQ):
         [0, 0, body_len - flange_t - cone_h]
     )
     flange = cyl_z(flange_r, body_len - flange_t, body_len)
-    tip = extrude(rounded_rect(tip_sq, tip_sq, 1.0), TIP_DEPTH).translate([0, 0, body_len])
+    tip = extrude(rounded_rect(tip_sq, tip_sq, TIP_CORNER_R), TIP_DEPTH).translate([0, 0, body_len])
     adapter = body + cone + flange + tip
 
     # D bore for the shaft
@@ -187,7 +193,7 @@ def build_adapter(tip_sq=TIP_SQ):
         adapter -= cyl_z(bore_r, -1, round_len)
     # M3 set screw onto the shaft flat (screw self-taps into the print)
     adapter -= cyl_y(1.45, 0, body_r + 1, z=7.0)
-    # clearance for the cube's tension screw
+    # clearance for the boss around the cube's tension screw
     adapter -= cyl_z(TIP_SCREW_D / 2, body_len - 2.0, body_len + TIP_DEPTH + 1)
     return adapter
 

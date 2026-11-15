@@ -79,6 +79,11 @@ TOWER_PILOT_R = R_IN + PLATE_T / 2  # 57: screw holes in the top of each post
 TOWER_PILOT_T = 20.0
 COLLAR_T = 3.0                     # wall around the top motor
 COLLAR_H = 24.0
+EAR_T = 3.5                        # split base: thickness of each joint ear
+EAR_H = 12.0                       # split base: ear height
+EAR_Z = 7.5                        # split base: joint bolt height
+SEAM_GAP = 0.1                     # split base: taken off each seam face
+MINI_BED = 180.0                   # Bambu Lab A1 mini bed, for the split base
 OUT = pathlib.Path(__file__).parent
 
 WALL_IN = NEMA / 2 + MOTOR_FIT     # 21.5: inner face of the walls beside a motor
@@ -140,6 +145,42 @@ def build_base():
     bolts += cyl_z(3.25, -1, 3.0, x=PED_POST, y=PED_POST)
     base -= four(bolts)
     return base
+
+
+def build_base_half():
+    """One half of the base, for beds too small for the 208 mm one-piece base.
+
+    The base is cut along a Z-shaped seam: down the middle (x = 0) through the
+    centre, with a jog along y = 42 and y = -42 so each half keeps two whole
+    arms. Turned 180 degrees a half is its own partner, so one file is printed
+    twice. Upright ears either side of the seam take four M3 x 10 bolts with
+    nuts; the pedestal's four screws (two in each half) also tie the halves.
+    This is the half holding the +X and +Y arms.
+    """
+    base = build_base()
+    # carry each tower pad in to the centre ring: thicker necks where an arm
+    # now hangs from one side only
+    necks = Manifold()
+    for sy in (1, -1):
+        ya, yb = sorted((sy * 19.0, sy * (BASE_K - 1.0)))
+        necks += box(28.0, R_IN - SLIDE - 1, ya, yb, 0, PAD_Z)
+    base += four(necks)
+
+    # ears: one pair across the middle seam, one pair across the jog
+    mid = box(-EAR_T, EAR_T, 28.5, 37.5, 0, EAR_H)
+    mid_hole = cyl_x(M3_CLEAR / 2, -EAR_T - 1, EAR_T + 1, y=33.0, z=EAR_Z)
+    jog = box(-40.0, -30.0, BASE_K - EAR_T, BASE_K + EAR_T, 0, EAR_H)
+    jog_hole = cyl_y(M3_CLEAR / 2, BASE_K - EAR_T - 1, BASE_K + EAR_T + 1, x=-35.0, z=EAR_Z)
+    # room for the bolt head and a screwdriver on one side, the nut on the other
+    jog_room = (box(-40.5, -29.5, 27.0, BASE_K - EAR_T, BASE_T, EAR_H + 8)
+                + box(-40.5, -29.5, BASE_K + EAR_T, R_IN - SLIDE - 1, BASE_T, EAR_H + 8))
+    base -= two(jog_room)
+    base += two(mid + jog)
+    base -= two(mid_hole + jog_hole)
+
+    big, g = 500.0, SEAM_GAP
+    keep = box(-big, big, BASE_K + g, big, -big, big) + box(g, big, -BASE_K + g, big, -big, big)
+    return base ^ keep
 
 
 def build_pedestal():
@@ -323,8 +364,30 @@ def main():
         "towers pushed in 5 mm vs base, pedestal, top": overlap(towers_in, base + pedestal + top),
         "towers pulled out 5 mm vs base, top": overlap(towers_out, base + top),
     }
+    half = build_base_half()
+    split = half + half.rotate([0, 0, 180])
+    checks.update({
+        "split base: halves vs each other": overlap(half, half.rotate([0, 0, 180])),
+        "split base vs pedestal, bottom motor": overlap(split, pedestal + motor_bottom()),
+        "split base vs towers": overlap(split, towers),
+        "split base vs towers pushed in 5 mm": overlap(split, towers_in),
+        "split base vs towers pulled out 5 mm": overlap(split, towers_out),
+        "split base vs side motors": overlap(split, side_motors),
+    })
     for name, vol in checks.items():
         print(f"{'OK ' if vol < 1.0 else 'HIT'} {name}: {vol:.1f} mm3")
+
+    # the split base is an alternative to frame_base, so it is not in the total
+    half_mesh = print_oriented(to_trimesh(half), False)
+    half_mesh.export(OUT / "stl" / "frame_base_half.stl")
+    hs = half_mesh.bounds[1] - half_mesh.bounds[0]
+    one_body = len(half_mesh.split(only_watertight=False)) == 1
+    fits = max(hs[0], hs[1]) <= MINI_BED
+    print(f"{'OK ' if fits and one_body else 'HIT'} split base: half fits a "
+          f"{MINI_BED:g} mm bed in one piece: {hs[0]:.1f} x {hs[1]:.1f} mm, bodies one={one_body}")
+    print(f"frame_base_half: watertight={half_mesh.is_watertight} "
+          f"size={hs[0]:.1f} x {hs[1]:.1f} x {hs[2]:.1f} mm "
+          f"solid volume={half_mesh.volume / 1000:.1f} cm3 (x2, instead of frame_base)")
 
     parts = {"frame_base": (base, False, 1), "frame_pedestal": (pedestal, True, 1),
              "frame_tower": (short, False, 2), "frame_tower_tall": (tall, False, 2),

@@ -1,6 +1,6 @@
 """Drive adapters in a range of tip widths, for finding the fit by trial.
 
-The recess under the cube's centre cap has not been measured, so this prints
+The recess under the cube's centre cap is only estimated from photos, so this prints
 the real adapter nine times, each with a different tip width and the width
 engraved on its side. The one that fits the cube is the one to use; put its
 width into TIP_SQ in bench_stand.py so the other five can be printed to match.
@@ -9,13 +9,14 @@ Run:  python adapter_set.py
 Writes stl/drive_adapter_set.stl (all nine, standing tip up for one print).
 
 Only the tip width changes. Tip depth and the screw clearance still come from
-TIP_DEPTH and TIP_SCREW_D in bench_stand.py, which are placeholders.
+TIP_DEPTH and TIP_SCREW_D in bench_stand.py, which are photo estimates.
 """
 from manifold3d import Manifold
 
 from bench_stand import OUT, box, build_adapter, to_trimesh
 
-SIZES = [13.5, 13.75, 14.0, 14.25, 14.5, 14.75, 15.0, 15.25, 15.5]
+# centred on the photo estimate of the recess (about 17 mm, good to +/- 1 mm)
+SIZES = [15.75, 16.0, 16.25, 16.5, 16.75, 17.0, 17.25, 17.5, 17.75]
 PITCH = 24.0         # spacing between adapters on the bed
 COLUMNS = 3
 BODY_R = 7.0         # adapter body radius, as in build_adapter()

@@ -43,12 +43,16 @@ replaced on 2026-11-10; nothing from it should be reintroduced.
   "cage" supports, a GAN-Robot-style tray with slim pillars, and a five-motor
   layout. Parts: flat base, pedestal around the bottom motor, two short and
   two tall box-column towers with a four-walled motor cradle on top, and a
-  bridge with a collar for the top motor. `--preview` writes
+  bridge with a collar for the top motor. `build_base_half()` (added
+  2026-11-14) is an alternative base in two identical halves, 146 mm square,
+  for a 180 mm bed such as the Bambu Lab A1 mini: Z-shaped seam, four M3 x 10
+  bolts through upright ears, written as `frame_base_half.stl`. It has its
+  own checks in `frame.py` and is not in the STEP assembly. `--preview` writes
   `cad/preview/frame_*.png`. Imports from `bench_stand.py` and runs
   interference checks every time. The README renders,
   `docs/parts-viewer.html` and option A in the enclosure page still show the
   frame from before that change.
-- `cad/adapter_set.py`: the adapter nine times, tip widths 13.5 to 15.5 mm,
+- `cad/adapter_set.py`: the adapter nine times, tip widths 15.75 to 17.75 mm,
   each engraved with its width, for finding `TIP_SQ` by trial fit.
 - `cad/inventor_export.py`: the whole robot (frame, six motors, adapters, cube)
   as one STEP assembly for Autodesk Inventor, in `cad/step/`. It reuses the
@@ -59,6 +63,18 @@ replaced on 2026-11-10; nothing from it should be reintroduced.
 - `cad/stl/`: generated STL files, in print orientation.
 - `hardware/README.md`: assembly, wiring, cube preparation, bench test.
 - `docs/BOM.md`: the bill of materials. Keep it in step with any parts change.
+- Copies of artifact pages published on 2026-11-14 (3D viewers; the meshes
+  are embedded, so regenerate the page if the geometry changes):
+  - `docs/adapter-fit.html`: the cube's centre recess (as estimated from
+    photos) and the adapter. Its sizes are typed into the page by hand.
+    https://claude.ai/artifact/G8ieZWQqmBhFJi6Yzjfutd
+  - `docs/adapter-set.html`: the nine trial adapters.
+    https://claude.ai/artifact/UK5CkWZ6wSTRduwjkcntTN
+  - `docs/split-base.html`: the two-piece base.
+    https://claude.ai/artifact/CJRJqvExEwrSMN7eybyUna
+  - `docs/cable-routes.html`: the six motors in the frame with suggested
+    cable routes (the routes and the motor plug are not modelled in `cad/`).
+    https://claude.ai/artifact/6unfMbRZGT6rQG7a3Qrbrh
 - `docs/build-plan.html`, `docs/parts-viewer.html`, `docs/enclosure-options.html`:
   copies of published Claude artifact pages (research, 3D viewer, ten frame
   concepts A to J ranked by printed plastic). They are page fragments without
@@ -117,8 +133,13 @@ After a geometry change, run `frame.py` and confirm every check prints `OK`.
 
 - Motor dimensions come from the 17HE19-2004S datasheet drawing. Cube size
   comes from the seller's listing. Nothing has been measured with calipers.
-- The adapter tip (`TIP_SQ`, `TIP_DEPTH`, `TIP_SCREW_D`) is a placeholder. The
-  recess under the cube's centre cap is not published and must be measured.
+- The adapter tip (`TIP_SQ`, `TIP_CORNER_R`, `TIP_DEPTH`, `TIP_SCREW_D`) is an
+  estimate from the user's photos of the open centre (2026-11-14), scaled
+  against the 56 mm cube width, good to about ± 1 mm: recess about 17 mm wide
+  and 8 mm deep, corners about 2.5 mm radius (tip corners are 4 mm), and a boss about 9.5 mm across
+  around the tension screw with its top about 2 mm below the rim (the
+  hole in the tip is 11.5 mm so it clears the boss with margin). It still
+  needs calipers or a trial fit with the adapter set.
 - Speed figures (40 to 45 ms per quarter turn at 24 V) are calculations, not
   measurements. No published cube robot uses this exact motor.
 - The firmware passes the host test and compiles for the Teensy 4.1

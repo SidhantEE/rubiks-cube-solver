@@ -1,0 +1,297 @@
+<title>Adapter Fit Viewer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: the 3D view is the page; controls sit directly under it, then the estimates as a datasheet table. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --stage: #e9edf3;
+  --fg: #171b22;
+  --muted: #5a6472;
+  --line: #d9dde4;
+  --accent: #1f57c3;
+  --accent-soft: #e4ecfb;
+  --ok: #1d7a4a;
+  --ok-soft: #dff3e8;
+  --warn: #8a5a00;
+  --warn-soft: #fbefd2;
+  --cube: #d3262b;
+  --print: #3f7fd0;
+  --steel: #9aa3ad;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101318; --surface: #181c23; --stage: #1d222b; --fg: #e8ebf0; --muted: #9aa4b2; --line: #2b313b;
+    --accent: #7ea6f5; --accent-soft: #1c2a47;
+    --ok: #6fd3a0; --ok-soft: #153324; --warn: #e9b955; --warn-soft: #3a2c0c;
+    --cube: #e0393d; --print: #5b9bea; --steel: #aab3bd;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101318; --surface: #181c23; --stage: #1d222b; --fg: #e8ebf0; --muted: #9aa4b2; --line: #2b313b;
+  --accent: #7ea6f5; --accent-soft: #1c2a47;
+  --ok: #6fd3a0; --ok-soft: #153324; --warn: #e9b955; --warn-soft: #3a2c0c;
+  --cube: #e0393d; --print: #5b9bea; --steel: #aab3bd;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 960px; margin: 0 auto; padding-block: 36px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 40px; }
+header { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: clamp(26px, 5vw, 36px); line-height: 1.15; font-weight: 700; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font-size: 21px; line-height: 1.25; font-weight: 600; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 68ch; }
+section { display: flex; flex-direction: column; gap: 14px; }
+.note { color: var(--muted); font-size: 14px; }
+ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 68ch; }
+code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
+
+.stage { background: var(--stage); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.view { width: 100%; height: min(62vh, 520px); min-height: 300px; display: block; touch-action: none; cursor: grab; }
+.view:active { cursor: grabbing; }
+#fallback { padding: 24px; color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.group { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; min-width: 0; }
+.group > span.k { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+input[type="range"] { accent-color: var(--accent); width: min(220px, 50vw); }
+button { font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#readout { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); padding: 10px 14px; border-top: 1px solid var(--line); background: var(--surface); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 1px 7px; border-radius: 3px; white-space: nowrap; }
+.tag.ok { background: var(--ok-soft); color: var(--ok); }
+.tag.warn { background: var(--warn-soft); color: var(--warn); }
+.answer { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">YJ YuLong V2 M · centre recess and drive adapter</div>
+    <h1>How the adapter sits in the cube's centre</h1>
+    <p>Both models are built from the sizes read off your four photos, scaled against the 56 mm cube width. Treat every cube number as good to about 1 mm either way. Drag to turn the view, scroll or pinch to zoom.</p>
+  </header>
+
+  <section>
+    <div class="stage">
+      <canvas class="view" id="view" aria-label="3D view of the cube centre piece and the drive adapter"></canvas>
+      <div id="fallback" hidden>The 3D view could not start in this browser. The table below has the same numbers.</div>
+      <div class="controls">
+        <div class="group">
+          <span class="k">Adapter</span>
+          <input type="range" id="lift" min="0" max="30" step="0.5" value="14" aria-label="Adapter height above the seated position">
+          <span id="readout"></span>
+        </div>
+        <div class="group">
+          <label><input type="checkbox" id="cut" checked> Cut in half</label>
+          <label><input type="checkbox" id="tiles" checked> Neighbouring pieces</label>
+        </div>
+        <div class="group">
+          <button type="button" id="seat">Seat it</button>
+          <button type="button" id="reset">Reset view</button>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--cube)"></i>Cube centre piece (estimated)</span>
+        <span><i class="swatch" style="background:var(--print)"></i>Printed adapter</span>
+        <span><i class="swatch" style="background:var(--steel)"></i>Tension screw</span>
+      </div>
+    </div>
+    <p class="note">With the adapter seated and the cut on, you can see the three things that matter: the tip's flats against the recess walls, the hollow tip passing over the boss, and the gap left above the floor ribs.</p>
+  </section>
+
+  <section>
+    <h2>What the photos show</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Feature</th><th>Estimate</th><th>How sure</th><th>Read from</th></tr></thead>
+        <tbody>
+          <tr><td>Centre piece, outside width</td><td class="n">18.8 mm</td><td><span class="tag ok">good</span></td><td>Top-down photos; matches 56 mm ÷ 3</td></tr>
+          <tr><td>Recess width at the rim</td><td class="n">17.0 mm</td><td><span class="tag warn">± 0.7 mm</span></td><td>Top-down photos; the rim is rounded, so its inner edge is soft</td></tr>
+          <tr><td>Recess corner radius</td><td class="n">2.5 mm</td><td><span class="tag warn">± 1 mm</span></td><td>Close photo with the paper</td></tr>
+          <tr><td>Recess depth, rim to floor</td><td class="n">8 mm</td><td><span class="tag warn">± 1.5 mm</span></td><td>Paper strip and the angle of the close photo</td></tr>
+          <tr><td>Boss around the screw, outside</td><td class="n">9.5 mm</td><td><span class="tag warn">± 0.7 mm</span></td><td>Two photos gave 8.6 and 9.6 mm</td></tr>
+          <tr><td>Boss top below the rim</td><td class="n">2 mm</td><td><span class="tag warn">± 1 mm</span></td><td>Angled photos</td></tr>
+          <tr><td>Screw head</td><td class="n">6 mm</td><td><span class="tag ok">good</span></td><td>Sits inside the boss, so it never touches the adapter</td></tr>
+          <tr><td>Ribs on the floor</td><td class="n">about 1 mm high</td><td><span class="tag warn">rough</span></td><td>Visible in the dark photos; shape simplified here</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">I could not tell from the photo whether your paper was college ruled (7.1 mm) or wide ruled (8.7 mm). Both land within the depth range above, and the adapter does not depend on it because the tip stops 3 mm short of the floor.</p>
+  </section>
+
+  <section>
+    <h2>The adapter that follows from it</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Setting in <code>bench_stand.py</code></th><th>Was</th><th>Now</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><code>TIP_SQ</code></td><td class="n">15.0</td><td class="n">16.75 mm</td><td>A quarter millimetre under the recess width</td></tr>
+          <tr><td><code>TIP_CORNER_R</code></td><td class="n">1.0</td><td class="n">4.0 mm</td><td>Rounder than the recess corners, so the flats do the driving and the corners never bind</td></tr>
+          <tr><td><code>TIP_DEPTH</code></td><td class="n">4.0</td><td class="n">5.0 mm</td><td>More grip, still 3 mm above the floor</td></tr>
+          <tr><td><code>TIP_SCREW_D</code></td><td class="n">7.5</td><td class="n">11.5 mm</td><td>The old hole cleared only the screw head. The boss around it is wider and would have stopped the tip going in. The hole is oversized on purpose, because it only needs to clear the boss and printed holes come out small.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="answer">
+      <strong>Print the trial set before printing six.</strong>
+      <p><code>cad/stl/drive_adapter_set.stl</code> now holds nine adapters with tips from 15.75 to 17.75 mm, each engraved with its width. Keep the one that goes in without force and does not rock, then put its width into <code>TIP_SQ</code>.</p>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  var canvas = document.getElementById('view');
+  var renderer;
+  try {
+    if (!window.THREE || !THREE.OrbitControls) throw new Error('three.js missing');
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  } catch (e) {
+    canvas.hidden = true;
+    document.getElementById('fallback').hidden = false;
+    return;
+  }
+
+  // ---- sizes, millimetres. Cube values are photo estimates. ----
+  var C = { outer: 18.8, outerR: 3.4, inner: 17.0, innerR: 2.5, depth: 8.0, floorT: 1.2,
+            bossOD: 9.5, bossID: 7.5, bossBelowRim: 2.0, screwHead: 6.0, ribH: 1.0 };
+  var A = { bodyLen: 24.5, bodyR: 7.0, flangeR: 9.0, flangeT: 3.0, coneH: 2.0,
+            tipSq: 16.75, tipR: 4.0, tipDepth: 5.0, boreD: 11.5, shaftR: 2.6, flatY: 2.15, shaftDepth: 17.5 };
+
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.localClippingEnabled = true;
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(32, 1, 1, 1000);
+  var controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.12;
+  function resetView() { camera.position.set(84, 58, 76); controls.target.set(0, 20, 0); controls.update(); }
+  resetView();
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f99, 0.85));
+  var sun = new THREE.DirectionalLight(0xffffff, 0.7); sun.position.set(40, 80, 30); scene.add(sun);
+  var fill = new THREE.DirectionalLight(0xffffff, 0.35); fill.position.set(60, 10, -40); scene.add(fill);
+
+  // Everything is modelled with Z up, then the root is turned so Z shows as up on screen.
+  var root = new THREE.Group(); root.rotation.x = -Math.PI / 2; scene.add(root);
+
+  var clip = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);   // keeps the half with x <= 0
+  var mats = [];
+  function mat(token, opts) {
+    var m = new THREE.MeshStandardMaterial(Object.assign({ roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide }, opts || {}));
+    m.userData.token = token; mats.push(m); return m;
+  }
+  var mCube = mat('--cube');
+  var mTile = mat('--cube', { transparent: true, opacity: 0.28, depthWrite: false });
+  var mPrint = mat('--print', { roughness: 0.7 });
+  var mSteel = mat('--steel', { roughness: 0.3, metalness: 0.8 });
+
+  function rrect(w, h, r, Ctor) {
+    var s = new (Ctor || THREE.Shape)(), x = w / 2, y = h / 2;
+    s.moveTo(-x + r, -y); s.lineTo(x - r, -y); s.absarc(x - r, -y + r, r, -Math.PI / 2, 0, false);
+    s.lineTo(x, y - r); s.absarc(x - r, y - r, r, 0, Math.PI / 2, false);
+    s.lineTo(-x + r, y); s.absarc(-x + r, y - r, r, Math.PI / 2, Math.PI, false);
+    s.lineTo(-x, -y + r); s.absarc(-x + r, -y + r, r, Math.PI, 1.5 * Math.PI, false);
+    return s;
+  }
+  function circle(r, Ctor) { var s = new (Ctor || THREE.Shape)(); s.absarc(0, 0, r, 0, Math.PI * 2, false); return s; }
+  function extrude(shape, holes, z0, z1, m, parent) {
+    (holes || []).forEach(function (h) { shape.holes.push(h); });
+    var g = new THREE.ExtrudeGeometry(shape, { depth: z1 - z0, bevelEnabled: false, curveSegments: 40 });
+    var mesh = new THREE.Mesh(g, m); mesh.position.z = z0; parent.add(mesh); return mesh;
+  }
+
+  // ---- cube centre piece: rim at z = 0, recess going down ----
+  var centre = new THREE.Group(); root.add(centre);
+  var floorZ = -C.depth;
+  extrude(rrect(C.outer, C.outer, C.outerR), [rrect(C.inner, C.inner, C.innerR, THREE.Path)], floorZ, 0, mCube, centre);
+  extrude(rrect(C.outer, C.outer, C.outerR), [circle(1.6, THREE.Path)], floorZ - C.floorT, floorZ, mCube, centre);
+  extrude(circle(C.bossOD / 2), [circle(C.bossID / 2, THREE.Path)], floorZ, -C.bossBelowRim, mCube, centre);
+  for (var i = 0; i < 4; i++) {            // low ribs from the boss to each wall
+    var len = C.inner / 2 - C.bossOD / 2;
+    var rib = new THREE.Mesh(new THREE.BoxGeometry(len, 1.0, C.ribH), mCube);
+    var a = i * Math.PI / 2, d = C.bossOD / 2 + len / 2;
+    rib.position.set(Math.cos(a) * d, Math.sin(a) * d, floorZ + C.ribH / 2); rib.rotation.z = a; centre.add(rib);
+  }
+  var headTop = -C.bossBelowRim - 2.2;
+  extrude(circle(C.screwHead / 2), null, headTop - 1.8, headTop, mSteel, centre);
+  extrude(circle(1.3), null, floorZ - C.floorT - 3, headTop - 1.8, mSteel, centre);
+
+  // the eight pieces around the centre, as plain blocks for scale
+  var tiles = new THREE.Group(); root.add(tiles);
+  for (var tx = -1; tx <= 1; tx++) for (var ty = -1; ty <= 1; ty++) {
+    if (!tx && !ty) continue;
+    var t = extrude(rrect(18.2, 18.2, 3.2), null, floorZ - C.floorT, 0, mTile, tiles);
+    t.position.x = tx * 18.75; t.position.y = ty * 18.75;
+  }
+
+  // ---- adapter: modelled motor end at z = 0, tip at the top, then flipped tip-down ----
+  var adapter = new THREE.Group(); root.add(adapter);
+  var flip = new THREE.Group(); flip.rotation.x = Math.PI; adapter.add(flip);
+  var dHole = new THREE.Path(), fa = Math.asin(A.flatY / A.shaftR);
+  dHole.absarc(0, 0, A.shaftR, Math.PI - fa, 2 * Math.PI + fa, false); dHole.closePath();
+  extrude(circle(A.bodyR), [dHole], 0, A.shaftDepth, mPrint, flip);
+  var z1 = A.bodyLen - A.flangeT - A.coneH, z2 = A.bodyLen - A.flangeT, pocket = A.bodyLen - 2.0;
+  var prof = [[0, A.shaftDepth], [A.bodyR, A.shaftDepth], [A.bodyR, z1], [A.flangeR, z2], [A.flangeR, A.bodyLen],
+              [A.boreD / 2, A.bodyLen], [A.boreD / 2, pocket], [0, pocket]]
+    .map(function (p) { return new THREE.Vector2(p[0], p[1]); });
+  var lathe = new THREE.LatheGeometry(prof, 72); lathe.rotateX(Math.PI / 2); lathe.computeVertexNormals();
+  var mLathe = mat('--print', { roughness: 0.7, flatShading: true });
+  flip.add(new THREE.Mesh(lathe, mLathe));
+  extrude(rrect(A.tipSq, A.tipSq, A.tipR), [circle(A.boreD / 2, THREE.Path)], A.bodyLen, A.bodyLen + A.tipDepth, mPrint, flip);
+
+  // ---- controls ----
+  var lift = document.getElementById('lift'), readout = document.getElementById('readout');
+  var cut = document.getElementById('cut'), tilesBox = document.getElementById('tiles');
+  function applyLift() {
+    var v = parseFloat(lift.value);
+    adapter.position.z = A.bodyLen + v;        // flange face lands on the rim at v = 0
+    var inside = A.tipDepth - v;
+    readout.textContent = v === 0 ? 'seated: tip 5.0 mm in, 3.0 mm above the floor'
+      : inside > 0 ? 'tip ' + inside.toFixed(1) + ' mm into the recess'
+      : 'tip ' + (-inside).toFixed(1) + ' mm above the rim';
+  }
+  function applyCut() { mats.forEach(function (m) { m.clippingPlanes = cut.checked ? [clip] : []; m.needsUpdate = true; }); }
+  function applyTheme() { mats.forEach(function (m) { m.color.set(css(m.userData.token)); }); }
+  lift.addEventListener('input', applyLift);
+  cut.addEventListener('change', applyCut);
+  tilesBox.addEventListener('change', function () { tiles.visible = tilesBox.checked; });
+  document.getElementById('seat').addEventListener('click', function () { lift.value = 0; applyLift(); });
+  document.getElementById('reset').addEventListener('click', resetView);
+  applyLift(); applyCut(); applyTheme();
+  new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', applyTheme);
+  }
+
+  function resize() {
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(canvas); else window.addEventListener('resize', resize);
+  resize();
+  (function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
+})();
+</script>
