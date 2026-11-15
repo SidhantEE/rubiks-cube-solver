@@ -162,15 +162,35 @@ After a geometry change, run `frame.py` and confirm every check prints `OK`.
 
 ## Open work, in order
 
-1. Compile and flash the firmware on the Teensy; send `STATUS` with one driver.
-2. Bench test: one motor, start at `TURN 60`, shorten until steps are lost.
-   Holding 40 to 45 ms means the design works as planned.
-3. Measure the cube's centre recess and regenerate the adapter.
-4. Print and assemble the frame.
-5. Camera reading inside the robot. One camera sees only three faces, which is
-   not enough by itself; options are turning faces to reveal the hidden
-   stickers, mirrors, or a second camera. Camera mounts are not designed.
-6. Faster solving: rob-twophase (github.com/efrantar/rob-twophase) counts
-   opposite faces turning together as one move, which the firmware already
-   supports.
-7. A tray for the driver boards and a faster way to load the cube.
+Roadmap as of 2026-11-14. Each step depends on the one before unless noted.
+
+1. Choose and buy the printer. Bambu Lab A1 mini (180 mm bed) needs the
+   two-piece base (`frame_base_half.stl` x2); the A1 or anything with a bed
+   of 210 mm or more prints the one-piece `frame_base.stl`. The user was
+   leaning toward the A1 mini or A1 mini Combo; not decided.
+2. Print `drive_adapter_set.stl` and find the tip that fits the cube's centre
+   recess. Put its width into `TIP_SQ`, regenerate, and re-export the STEP
+   file. Also check the small notch on one wall of the recess (photo 3): if
+   it sticks inward, the tip needs a relief cut.
+3. Wire one TMC5160 driver to the Teensy and send `STATUS`. The firmware is
+   already flashed; no driver has been attached yet. Can be done while
+   waiting for the printer.
+4. Print the bench stand and one adapter in the chosen size. Test spin: one
+   motor with no cube, start at `TURN 60`, shorten until steps are lost.
+5. Same test with the cube on the adapter, turning one face. Holding 40 to
+   45 ms per quarter turn means the design works as planned.
+6. Print five more adapters and the frame (base or two base halves,
+   pedestal, two short towers, two tall towers, bridge) and assemble it.
+7. Wire all six drivers and motors and route the cables
+   (`docs/cable-routes.html` is a suggestion). Design a tray for the driver
+   boards and some cable clips; neither exists yet.
+8. First full solve, still scanning the cube by hand with `scanner.py`.
+9. Scan the cube inside the robot. Plan: two fixed webcams at opposite
+   corners, plus quarter turns to reveal stickers the frame hides (the
+   bridge and top motor block part of the top face). 3D-capture apps are not
+   needed. First job: use the CAD model to check which stickers each camera
+   position can see. Camera mounts are not designed.
+10. Faster solving: rob-twophase (github.com/efrantar/rob-twophase) counts
+    opposite faces turning together as one move, which the firmware already
+    supports.
+11. A faster way to load the cube.
