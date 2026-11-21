@@ -74,7 +74,9 @@ with calipers if you can:
 Put those into `TIP_SQ`, `TIP_DEPTH` and `TIP_SCREW_D` in `cad/bench_stand.py`
 and regenerate.
 
-Without calipers, print `cad/stl/drive_adapter_set.stl` instead (standing on
+Without calipers, print `cad/stl/drive_adapter_set.stl` instead (make it with
+`python cad/adapter_set.py`; it is not kept in the repository now that the tip
+width is found. Print it standing on
 the wide end, tips up, 100% infill, 0.2 mm layers, no supports). It is the
 adapter nine times, with tip widths from 15.75 to 17.75 mm in 0.25 mm steps and
 the width engraved on the side of each. Use the one whose tip goes into the
