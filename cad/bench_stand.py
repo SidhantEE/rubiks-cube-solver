@@ -36,15 +36,22 @@ SHAFT_D = 5.0        # motor shaft diameter
 SHAFT_FLAT = 4.5     # distance from flat to the opposite side of the shaft
 SHAFT_LEN = 24.0     # shaft length from motor face
 SHAFT_DCUT = 15.0    # length of the flat, measured from the shaft tip
+# Bore clearance. TOO TIGHT as it stands: on the trial print (2026-11-20) only
+# the shaft's chamfered tip entered the hole. bore_set.py prints the adapter
+# with six hole sizes; put the one that fits here.
+BORE_CLEAR = 0.1     # added to the shaft radius
+FLAT_CLEAR = 0.15    # added to the flat's distance from the axis
+BORE_CHAMFER = 0.8   # lead-in at the motor end, also beats first-layer squish
 
-# Drive adapter tip. ESTIMATES FROM PHOTOS (2026-11-14), scaled against the
-# 56 mm cube width, good to about +/- 1 mm. Not caliper measurements: confirm
-# the width with adapter_set.py before printing six.
+# Drive adapter tip. TIP_SQ was found by trial fit with adapter_set.py on
+# 2026-11-20: 16.5 mm was the snuggest tip that seated fully. The others are
+# still ESTIMATES FROM PHOTOS (2026-11-14), scaled against the 56 mm cube
+# width, good to about +/- 1 mm.
 # Seen in the photos: recess about 17 mm wide at the rim with corners of about
 # 2.5 mm radius, about 8 mm deep, low ribs on the floor, and a round boss
 # around the tension screw about 9.5 mm across whose top is about 2 mm below
 # the rim.
-TIP_SQ = 16.75       # width of the tip (recess is about 17 mm)
+TIP_SQ = 16.5        # width of the tip, from the trial fit
 TIP_CORNER_R = 4.0   # tip corner radius, larger than the recess corners even if they are 3.5
 TIP_DEPTH = 5.0      # how far the tip reaches into the recess (stays off the floor ribs)
 TIP_SCREW_D = 11.5   # clearance for the boss, generous: printed holes come out small
@@ -163,7 +170,7 @@ def build_stand():
 
 
 # ------------------------------------------------------------- drive adapter
-def build_adapter(tip_sq=TIP_SQ):
+def build_adapter(tip_sq=TIP_SQ, bore_clear=BORE_CLEAR, flat_clear=FLAT_CLEAR):
     """Printed sleeve from the motor's D shaft to the cube's centre recess.
 
     Modelled standing on its motor end (z = 0), tip pointing up, which is also
@@ -182,8 +189,8 @@ def build_adapter(tip_sq=TIP_SQ):
     adapter = body + cone + flange + tip
 
     # D bore for the shaft
-    bore_r = SHAFT_D / 2 + 0.1
-    flat_y = SHAFT_FLAT - SHAFT_D / 2 + 0.15
+    bore_r = SHAFT_D / 2 + bore_clear
+    flat_y = SHAFT_FLAT - SHAFT_D / 2 + flat_clear
     bore_depth = SHAFT_LEN - PLATE_T - 1.5 + 1.0
     bore = cyl_z(bore_r, -1, bore_depth) ^ box(-5, 5, -5, flat_y, -2, bore_depth + 1)
     adapter -= bore
@@ -191,6 +198,10 @@ def build_adapter(tip_sq=TIP_SQ):
     round_len = (SHAFT_LEN - SHAFT_DCUT) - PLATE_T - 1.5 + 1.0
     if round_len > 0:
         adapter -= cyl_z(bore_r, -1, round_len)
+    # lead-in chamfer at the motor end (the end that prints on the bed)
+    adapter -= Manifold.cylinder(BORE_CHAMFER + 1, bore_r + BORE_CHAMFER + 1, bore_r, SEG).translate(
+        [0, 0, -1]
+    )
     # M3 set screw onto the shaft flat (screw self-taps into the print)
     adapter -= cyl_y(1.45, 0, body_r + 1, z=7.0)
     # clearance for the boss around the cube's tension screw
@@ -255,7 +266,7 @@ def main():
     stand = to_trimesh(build_stand())
     adapter = to_trimesh(build_adapter())
     stand.export(OUT / "stl" / "bench_stand.stl")
-    adapter.export(OUT / "stl" / f"drive_adapter_PLACEHOLDER_{TIP_SQ:g}mm_tip.stl")
+    adapter.export(OUT / "stl" / f"drive_adapter_{TIP_SQ:g}mm_tip.stl")
 
     for name, mesh in (("bench_stand", stand), ("drive_adapter", adapter)):
         size = mesh.bounds[1] - mesh.bounds[0]

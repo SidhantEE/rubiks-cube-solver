@@ -54,6 +54,9 @@ replaced on 2026-11-10; nothing from it should be reintroduced.
   frame from before that change.
 - `cad/adapter_set.py`: the adapter nine times, tip widths 15.75 to 17.75 mm,
   each engraved with its width, for finding `TIP_SQ` by trial fit.
+- `cad/bore_set.py`: the adapter six times at the chosen tip, shaft holes
+  5.3 to 5.8 mm as drawn, each engraved with its hole size, for finding
+  `BORE_CLEAR` and `FLAT_CLEAR` by trial fit.
 - `cad/inventor_export.py`: the whole robot (frame, six motors, adapters, cube)
   as one STEP assembly for Autodesk Inventor, in `cad/step/`. It reuses the
   geometry in `frame.py` and `bench_stand.py` through `cad/step_kernel.py`,
@@ -75,6 +78,14 @@ replaced on 2026-11-10; nothing from it should be reintroduced.
   - `docs/cable-routes.html`: the six motors in the frame with suggested
     cable routes (the routes and the motor plug are not modelled in `cad/`).
     https://claude.ai/artifact/6unfMbRZGT6rQG7a3Qrbrh
+  - `docs/adapter-bore.html` (2026-11-20): the adapter's D-shaped shaft hole,
+    to-scale cuts and a 3D cutaway, against the datasheet shaft. Its numbers
+    are typed in by hand; regenerate it if the bore changes.
+    https://claude.ai/artifact/XRYhzkmhebtQysvBCf7WYC
+  - `docs/shaft-fit-check.html` (2026-11-20): two animated cutaways (the
+    shaft catching in the 5.2 mm hole, and fitting) and a 3D view of
+    `drive_adapter_bore_set.stl`.
+    https://claude.ai/artifact/1WisrqDscdMVRNhts9U8TR
 - `docs/build-plan.html`, `docs/parts-viewer.html`, `docs/enclosure-options.html`:
   copies of published Claude artifact pages (research, 3D viewer, ten frame
   concepts A to J ranked by printed plastic). They are page fragments without
@@ -133,13 +144,22 @@ After a geometry change, run `frame.py` and confirm every check prints `OK`.
 
 - Motor dimensions come from the 17HE19-2004S datasheet drawing. Cube size
   comes from the seller's listing. Nothing has been measured with calipers.
-- The adapter tip (`TIP_SQ`, `TIP_CORNER_R`, `TIP_DEPTH`, `TIP_SCREW_D`) is an
+- `TIP_SQ` = 16.5 mm was found by trial fit with the adapter set on
+  2026-11-20: the snuggest tip that seats fully. On the same print the
+  shaft hole (drawn 5.2 mm, 0.1 mm clearance on the radius, 0.15 on the
+  flat) was too tight: only the shaft's chamfered tip went in, about 1 mm.
+  `bore_set.py` is the next trial; a 0.8 mm lead-in chamfer
+  (`BORE_CHAMFER`) was added too. When fitted, the shaft is meant to stop
+  where its round part meets the flat, about 6.5 mm from the motor face (the
+  motor plate fills that gap).
+  The datasheet gives the shaft as 5 mm, 24 mm long, with a 15 mm D-cut;
+  the 4.5 mm across the flat is the usual NEMA 17 value, not confirmed.
+- The rest of the tip (`TIP_CORNER_R`, `TIP_DEPTH`, `TIP_SCREW_D`) is an
   estimate from the user's photos of the open centre (2026-11-14), scaled
   against the 56 mm cube width, good to about ± 1 mm: recess about 17 mm wide
   and 8 mm deep, corners about 2.5 mm radius (tip corners are 4 mm), and a boss about 9.5 mm across
   around the tension screw with its top about 2 mm below the rim (the
-  hole in the tip is 11.5 mm so it clears the boss with margin). It still
-  needs calipers or a trial fit with the adapter set.
+  hole in the tip is 11.5 mm so it clears the boss with margin).
 - Speed figures (40 to 45 ms per quarter turn at 24 V) are calculations, not
   measurements. No published cube robot uses this exact motor.
 - The firmware passes the host test and compiles for the Teensy 4.1
@@ -162,7 +182,7 @@ After a geometry change, run `frame.py` and confirm every check prints `OK`.
 
 ## Open work, in order
 
-Roadmap as of 2026-11-14. Each step depends on the one before unless noted.
+Roadmap as of 2026-11-20. Each step depends on the one before unless noted.
 The user follows progress in the "Roadmap" section of `README.md` and asked
 (2026-11-14) for it to be kept current: whenever a step is finished or the
 plan changes, tick or edit it there, update its date and done count, and keep
@@ -172,14 +192,15 @@ this list in step with it.
    two-piece base (`frame_base_half.stl` x2); the A1 or anything with a bed
    of 210 mm or more prints the one-piece `frame_base.stl`. The user was
    leaning toward the A1 mini or A1 mini Combo; not decided.
-2. Print `drive_adapter_set.stl` and find the tip that fits the cube's centre
-   recess. Put its width into `TIP_SQ`, regenerate, and re-export the STEP
-   file. Also check the small notch on one wall of the recess (photo 3): if
+2. Done 2026-11-20: the 16.5 mm tip fits (`TIP_SQ` set, STEP re-exported).
+   Next: print `drive_adapter_bore_set.stl` (tip 16.5, holes 5.3 to 5.8 mm)
+   and put the smallest hole the shaft slides fully into into `BORE_CLEAR` =
+   (diameter - 5) / 2 and `FLAT_CLEAR` = `BORE_CLEAR` + 0.05. Still open: check the small notch on one wall of the recess (photo 3): if
    it sticks inward, the tip needs a relief cut.
 3. Wire one TMC5160 driver to the Teensy and send `STATUS`. The firmware is
    already flashed; no driver has been attached yet. Can be done while
    waiting for the printer.
-4. Print the bench stand and one adapter in the chosen size. Test spin: one
+4. Print the bench stand and one `drive_adapter_16.5mm_tip.stl`. Test spin: one
    motor with no cube, start at `TURN 60`, shorten until steps are lost.
 5. Same test with the cube on the adapter, turning one face. Holding 40 to
    45 ms per quarter turn means the design works as planned.

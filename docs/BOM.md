@@ -98,7 +98,8 @@ All from `cad/`. Sizes are as printed.
 | `frame_tower.stl` | 2 | 58.5 × 76 × 132 mm | Print standing on its foot |
 | `frame_tower_tall.stl` | 2 | 58.5 × 76 × 163 mm | Print standing on its foot |
 | `frame_top.stl` | 1 | 136 × 53 × 29.5 mm | Bridge; print as it sits, collar up |
-| `drive_adapter_PLACEHOLDER_16.75mm_tip.stl` | 6 | 18 × 18 × 29.5 mm | Tip size is estimated from photos; confirm with the adapter set first |
+| `drive_adapter_bore_set.stl` | 1 | 66 × 42 × 29.5 mm | Six adapters, shaft holes 5.3 to 5.8 mm; print first, tips up |
+| `drive_adapter_16.5mm_tip.stl` | 6 | 18 × 18 × 29.5 mm | Tip width checked by trial fit; set the shaft hole from the bore set before printing these |
 
 None need supports. All fit the UTA FabLab's Prusa i3 MK3 (250 × 210 × 210 mm).
 

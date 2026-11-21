@@ -159,7 +159,7 @@ All six drivers share ENABLE on pin 23 (active LOW).
 
 ## Roadmap
 
-Last updated 2026-11-14. Done: 8 of 19.
+Last updated 2026-11-20. Done: 9 of 20.
 
 **Done**
 
@@ -171,11 +171,12 @@ Last updated 2026-11-14. Done: 8 of 19.
 - [x] Compile the firmware and flash it to the Teensy (no driver attached yet)
 - [x] Estimate the cube's centre recess from photos and size the adapter to it
 - [x] Design a two-piece base for printers with a 180 mm bed
+- [x] Print the adapter trial set and find the tip that fits the cube (16.5 mm)
 
 **Next, in order**
 
 - [ ] Choose and buy the 3D printer (a 180 mm bed needs the two-piece base)
-- [ ] Print the adapter trial set and find the tip that fits the cube
+- [ ] Print the shaft-hole trial set and find the hole that fits the motor shaft
 - [ ] Wire one driver to the Teensy and get a `STATUS` reply
 - [ ] Test spin: one motor on the bench stand, no cube
 - [ ] Test spin with the cube: hold 40 to 45 ms per quarter turn
@@ -198,8 +199,9 @@ What is and is not verified:
   correctly. No driver or motor has run.
 - Motor and cube dimensions come from the motor datasheet and the cube's
   product listing, not from measuring the real parts.
-- The shaft adapter's tip is estimated from photos, good to about 1 mm. The
-  trial set in `cad/stl/drive_adapter_set.stl` is what confirms the fit.
+- The adapter tip width (16.5 mm) was found by trial fit in the cube. The
+  shaft hole on that print was too tight; `cad/stl/drive_adapter_bore_set.stl`
+  is the trial set for it.
 - The two-piece base passes the collision checks in `cad/frame.py` but has
   not been printed.
 - The speed target is a calculation: 40 to 45 ms per quarter turn at 24 V.

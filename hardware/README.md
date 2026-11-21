@@ -83,6 +83,14 @@ regenerate to print the other five. Only the width varies: the tip depth and
 boss clearance in the set are the photo estimates. If no tip goes over the
 boss, raise `TIP_SCREW_D`.
 
+The shaft hole is found the same way. `cad/stl/drive_adapter_bore_set.stl` is
+the adapter six times with the chosen tip and holes drawn from 5.3 to 5.8 mm,
+each engraved with its hole size. Line the shaft's flat up with the set-screw
+hole and push. Use the smallest hole the shaft slides into until its round
+part stops it, about 6.5 mm short of the motor face. Then set
+`BORE_CLEAR = (size - 5) / 2` and `FLAT_CLEAR = BORE_CLEAR + 0.05` in
+`cad/bench_stand.py`.
+
 ## Cube
 
 YJ YuLong V2 M, 56 mm, magnetic.
